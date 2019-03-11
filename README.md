@@ -7,16 +7,22 @@ output:
 
 This is the repo for the one-day workshop *"Exploring the tidyverse"* taught at [NICAR](https://www.ire.org/conferences/nicar-2019/)'s 2019 confernce in Orange County, California.
 
-It is a heavily modified version of a session originally taught by Hadley Wickham and based on the book [R for Data Science](http://r4ds.had.co.nz/). It contains significant changes and additions to the original modules tailored to a data journalism audience and one-day time frame, including new training data and materials on visualization from Andrew Ba Tran and his [R for Journalists](https://learn.r-journalism.com/en/), my own materials and training sequences on transforming data, and Olga Pierce's materials on modeling and statistics.
+It contains significant changes and additions to the original modules by Hadley Wickham, tailored to a data journalism audience and one-day time frame, including new training data and materials on visualization from Andrew Ba Tran and his [R for Journalists](https://learn.r-journalism.com/en/), my own materials and training sequences on transforming data, and Olga Pierce's materials on modeling and statistics. We did keep most of the slides and cheatsheets from the original repo, but created new coding sequences that fall into three main modules:
 
-This workshop is designed for people who are familiar with R and want to learn how to achieve their data analysis goals the "tidy" way. You will learn how to visualize, transform, and model data in R and work with date-times, character strings, and untidy data formats. Along the way, you will learn and use many packages from the tidyverse including ggplot2, dplyr, tidyr, readr, purrr, tibble, stringr, lubridate, and forcats.
+A. Transforming Data
+B. Visualizing Data
+C. Modeling Data
+
+This workshop is designed for people who are familiar with some R and want to learn how to achieve their data analysis goals the "tidy" way. 
+
+You will learn how to visualize, transform, and model data in R and work with date-times, character strings, and untidy data formats. Along the way, you will learn and use many packages from the tidyverse including ggplot2, dplyr, tidyr, readr, purrr, tibble, stringr, lubridate, and forcats.
 
 ## Software requirements
 
 You'll need the following packages:
 
 ```R
-install.packages(c("tidyverse", "lubridate", "janitor", fivethirtyeight", "rmarkdown", "usethis"))
+install.packages(c("tidyverse", "lubridate", "janitor", "rmarkdown", "usethis"))
 ```
 
 Then you can grab a local copy of all the slides, code, data, and cheatsheets with:
