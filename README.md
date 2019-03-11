@@ -7,7 +7,7 @@ output:
 
 This is the repo for the one-day workshop *"Exploring the tidyverse"* taught at [NICAR](https://www.ire.org/conferences/nicar-2019/)'s 2019 confernce in Orange County, California.
 
-It contains significant changes and additions to the original modules by Hadley Wickham, tailored to a data journalism audience and one-day time frame, including new training data and materials on visualization from Andrew Ba Tran and his [R for Journalists](https://learn.r-journalism.com/en/), my own materials and training sequences on transforming data, and Olga Pierce's materials on modeling and statistics. We did keep most of the slides and cheatsheets from the original repo, but created new coding sequences that fall into three main modules:
+It contains significant changes and additions to the original modules by Hadley Wickham, tailored to a data journalism audience and one-day time frame, including new training data and materials on visualization from Andrew Ba Tran and his [R for Journalists](https://learn.r-journalism.com/en/), my own materials and training sequences on transforming data, and Olga Pierce's materials on modeling and statistics. We did keep most of the slides and cheatsheets from the original repo, so that they're available for reference, but created new coding sequences that fall into three main modules:
 
 A. Transforming Data
 B. Visualizing Data
