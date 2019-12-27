@@ -238,76 +238,95 @@ Now let's try out some of our filtering and arranging techniques.
   
 Show all events in Iowa:
 
+```{r}
 events %>% 
   filter(state == "IA")
 
+```
+
 Has Kamala Harris been to Iowa?
 
+```{r}
 events %>% 
   filter(state == "IA",
          cand_lastname == "Harris")
 
+```
+
 What about another candidate
 
+```{r}
 events %>% 
   filter(state == "IA",
          cand_lastname == "Gillibrand")
 
-Let's talk about **date-specific** stuff.    
+```
+
+#### Let's talk about **date-specific** stuff.    
 If I have a properly formatted date in a dataframe, can I sort by it? *Yes.*
 
+```{r}
 events %>% 
   filter(state == "IA") %>% 
   arrange(desc(date))
 
+```
+
 What if I want to pull out only certain ranges of dates? *Several approaches.*   
 
-Specifiying a specific date using as.Date()
+Specifiying a specific date using `as.Date()`
 
+```{r}
 events %>% 
   filter(date < as.Date("2018-12-31"))
 
-Take advantage of the LUBRIDATE package - a tidyverse package specifically for dates  
+```
+
+Take advantage of the **LUBRIDATE** package - a tidyverse package specifically for dates  
 *Note: lubridate needs to be called separately at the top with library(lubridate) - it doesn't yet load with library(tidyverse)*    
-  
   
 Now watch what we can do:
 
+```{r}
 events %>% 
   filter(year(date) == 2018)
 
-Just events in January 2019
+# Just events in January 2019
 
 events %>% 
   filter(year(date) == 2019,
          month(date) == 1)
 
-Events earlier than Dec 2018
+# Events earlier than Dec 2018
 
 events %>% 
   filter(year(date) == 2018,
          month(date) < 12)
 
+```
+
 Also allows us to do things like, "I only want to see events the *first week of every month*" 
 
+```{r}
 events %>% 
   filter(day(date) <= 7)
 
+```
+
 Who's visiting Iowa the first week of a month? 
 
+```{r}
 events %>% 
   filter(day(date) <= 7,
          state == "IA")
 
- 
+```
+
 This is helpful but let's say you're doing this all the time.  
 It may be easier to create new columns to hold these values.
     
 Brings us to another key function of dpylr/tidyverse - **MUTATE**
   
- 
-
-
 ### ADDING COLUMNS WITH MUTATE  
   
 To add a column, you give it a name, then a single equal sign (=), then define what's in it.  
