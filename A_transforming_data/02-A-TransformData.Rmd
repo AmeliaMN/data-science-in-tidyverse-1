@@ -325,58 +325,80 @@ events %>%
 This is helpful but let's say you're doing this all the time.  
 It may be easier to create new columns to hold these values.
     
+    
 Brings us to another key function of dpylr/tidyverse - **MUTATE**
-  
+
 ### ADDING COLUMNS WITH MUTATE  
   
 To add a column, you give it a name, then a single equal sign (=), then define what's in it.  
 Test example:
 
+```{r}
 events %>% 
   mutate(mycolumn = "hi there")
 
+```
+
+
+```{r}
 events %>% 
   mutate(electioncycle = 2020)
 
+```
+
 Now let's try adding our date-related columns.  First we'll try year.
 
+```{r}
 events %>% 
   mutate(year = year(date))
 
+```
+
 We can add multiple columns as part of one mutate call. Let's do year, month and day in one swoop.
 
+```{r}
 events %>% 
   mutate(year = year(date),
          month = month(date),
          day = day(date))
 
+```
+
 This is a good time to remind ourselves that if we want to save our new columns, need to *create new object* or *overwrite*
 
+```{r}
 events <- events %>% 
   mutate(year = year(date),
          month = month(date),
          day = day(date))
 
+```
+
 Now we can use our new columns to filter
 
+```{r}
 events %>% 
   filter(year == 2019,
          month == 1)
 
+```
+
 Show me just Kamala's events in January
 
+
+```{r}
 events %>% 
   filter(year == 2019,
          month == 1,
          cand_lastname == "Harris")
 
- 
- 
+```
+
 
 ### GROUPING AND AGGREGATING  
  
  
-Able to aggregate our campaign trips would be helpful at this point, right?  
+Being able to aggregate our campaign trips would be helpful at this point, right?  
 Let's get into how to do it using the tidyverse and dplyr's `group_by()` and `summarise()` 
   
 Have you all grouped before in other languages? In base R itself?  Let's discuss.  
@@ -384,124 +406,175 @@ Have you all grouped before in other languages? In base R itself?  Let's discuss
 Grouping to see how many trips each candidate have been on in our data  
 Getting used to `n()`
 
+```{r}
 events %>% 
   group_by(cand_lastname) %>% 
   summarise(n())
 
+```
+
 now let's add arrange to see who has the most trips
+
+```{r}
 # (not run)  
 # events %>% 
 #   group_by(cand_lastname) %>% 
 #   summarise(n()) %>% 
 #   arrange(n)
 
+```
+
 hmm - what's going on here? Look closely and see what the generated count column is called
+
+```{r}
 # events %>% 
 #   group_by(cand_lastname) %>% 
 #   summarise(n()) %>% 
 #   arrange("n()")
 
-that doesn't work either.  What about this.
+```
 
+That doesn't work either. What about this:
+
+```{r}
 events %>% 
   group_by(cand_lastname) %>% 
   summarise(n()) %>% 
   arrange()
 
+```
+
 Ah - so that sort of works? But not really, how do we get desc
+
+```{r}
 # events %>% 
 #   group_by(cand_lastname) %>% 
 #   summarise(n()) %>% 
 #   arrange(desc)
 
+```
+
 Oy - this is getting frustrating. How do we solve?  
 By doing this: giving the new column a name of our own.  
 Check it out:
 
+```{r}
 events %>% 
   group_by(cand_lastname) %>% 
   summarise(n = n()) 
 
+```
+
 Now we can do:
 
+```{r}
 events %>% 
   group_by(cand_lastname) %>% 
   summarise(n = n()) %>% 
   arrange(desc(n))
 
-Bingo  
-We can call the new columnn anything we want. "n" is a common thing for counts,  
-but can be anything
+```
 
+Bingo.  
+We can call the new columnn anything we want. "n" is a common thing for counts,  
+but can be anything.
+
+```{r}
 events %>% 
   group_by(cand_lastname) %>% 
   summarise(numtrips = n()) %>% 
   arrange(desc(numtrips))
 
+```
+
 Now for the magic  
 Because this counting is such a common operation, and because the `n()` becomes a pain to deal with...  
-...there is a special shortcut that we can use that collapses everything into one function
+...there is a special shortcut that we can use that collapses everything into one function.  
+It's called `count()`.
 
+```{r}
 events %>% 
   count(cand_lastname)
+
+# sorting
 
 events %>% 
   count(cand_lastname) %>% 
   arrange(desc(n))
 
-top states visited
+# top states visited
 
 events %>% 
   count(state) %>% 
   arrange(desc(n))
 
-top months
+# top months
 
 events %>% 
   count(month) %>% 
   arrange(desc(n))
 
-top single day for most trips
+# top single day for most trips
 
 events %>% 
   count(date) %>% 
   arrange(desc(n))
 
+```
+
 we can also group by **more than one** variable  
 which candidates have gone to which states?
 
+```{r}
 events %>% 
   count(cand_lastname, state) %>% 
   arrange(state, desc(n))
 
+```
+
 what about the most frequent types of events
 
+```{r}
 events %>% 
   count(event_type) %>% 
   arrange(desc(n))
 
-here we're seeing some potentially dirty data that needs cleaning.  
-the event types seem to be inconsistently entered.  
-how might we standardize them? let's take a look.  
+```
+
+Here we're seeing some potentially dirty data that needs cleaning.  
+The event types seem to be inconsistently entered.  
+How might we standardize them? Let's take a look.  
+
+### USING CONDITIONAL FUNCTIONS
   
 A function that returns a vector the same length as the input is called **vectorized**.  
 * `ifelse()`  
   
-let's see `ifelse()` in action
+Let's see `ifelse()` in action
 
+```{r}
 events %>% 
   mutate(new_type = ifelse(event_type == "event speech", "TEST", event_type)) 
 
-ok now let's clean a few columns for real
+```
 
+Let's talk about what just happened?
+
+Ok, now let's clean a few columns for real:
+
+```{r}
 events %>% 
   mutate(new_type = ifelse(event_type == "campaign event", "event", event_type),
          new_type = ifelse(event_type == "campaign events", "event", new_type),
          new_type = ifelse(event_type == "event speech", "speech", new_type)
          ) 
 
-this can start to get a little tedious though. enter `case_when`
+```
 
+This can start to get a little tedious, though.  
+Enter `case_when`...
+
+```{r}
 events %>%
   mutate(new_type = case_when(
             event_type == "campaign event" ~ "event",
@@ -510,6 +583,8 @@ events %>%
             event_type == TRUE ~ "other"
       ))
 
+```
+
 Of course, you may be asking: wouldn't it be nice if we could standardize...  
 ...based on certain keywords or patterns?  Instead of spelling out every variation.  
   
@@ -517,13 +592,15 @@ The answer is yes. Thanks to "string functions"...!
   
 We'll show a quick example of what that looks like, and then start from the beginning in the next module.  
 
+```{r}
 events %>%
   mutate(new_type = case_when(
     str_detect(event_type, "event") ~ "event")
   )
 
+```
 
-We'll take a closer look at string functions now using the stringr package.  
+We'll next take a closer look at string functions now using the stringr package.  
   
 First, are there questions? Let's discuss.
 
