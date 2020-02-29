@@ -80,11 +80,17 @@ data <- tibble(place = c("HQ", "HQ", "HQ"),
               number = c("001", "002", "003"))
 
 data
+```
 
+
+```{r}
 # We can add a string to each value in the *number* column this way:
 data %>% 
   mutate(combined=str_c("Num: ", number))
+```
 
+
+```{r}
 # You can pass the variable `collapse` to `str_c()` if you're turning an array of strings into one.
 data %>% 
     group_by(place) %>% 
@@ -98,12 +104,18 @@ data %>%
 x <- "Dr. James"
 
 str_sub(x, 1, 3)
+```
 
+
+```{r}
 #you can also use this to replace something in a string position
 str_sub(x, 1, 3) <- "Mr."
 
 x
+```
 
+
+```{r}
 # Negative numbers count from the right.
 x <- "baby"
 
@@ -150,14 +162,20 @@ Acts like a wildcard.
 ```{r}
 x <- c("Bill", "Bob", "David.Williams")
 x
-
-str_detect(x, "il")
 ```
+
+
+```{r}
+str_detect(x, "il")
+
+```
+
 
 ### Back to our campaign data 
 
 ```{r}
 events
+
 ```
 
 Now let's use string functions to standardize a few event types
@@ -172,7 +190,7 @@ events %>%
 
 
 Could there be a problem here?  
-How would we handle multiples?
+How would we handle cells with multiple values?
 
 ```{r}
 events %>%
@@ -187,14 +205,15 @@ events %>%
   )
 ```
 
-Notice that in the example above, the search for comma comes first, not last  
+Notice that in the example above, the search for comma comes **first*, not last  
   
-We can also use our string functions for filtering    
-Let's see what that might look like
+We can also use our string functions for filtering.      
+Let's see what that might look like:
 
 ```{r}
 events %>% 
   filter(str_detect(event_type, "event"))
+
 ```
 
 That's *kinda* helpful, but is there a column this could be even more useful for?  
@@ -204,6 +223,7 @@ Examine the descriptions
 ```{r}
 events %>% 
   select(cand_restname, description)
+
 ```
 
 What we want to find are descriptions mentioning students
@@ -212,6 +232,7 @@ What we want to find are descriptions mentioning students
 events %>% 
   select(cand_restname, description) %>% 
   filter(str_detect(description, "student"))
+
 ```
 
 How about anything referencing the NAACP?
@@ -220,11 +241,21 @@ How about anything referencing the NAACP?
 events %>% 
   select(cand_restname, description) %>% 
   filter(str_detect(description, "NAACP"))
+
 ```
 
 Remember: R is *case-sensitive*.     
-Could an acronym like that possibly cause us trouble?  
   
+Could an acronym like that possibly cause us trouble?  
+
+```{r}
+events %>% 
+  select(cand_restname, description) %>% 
+  filter(str_detect(description, "Naacp"))
+
+
+```
+    
 If so, how might we solve the issue of case sensitivity?
    
 
@@ -232,6 +263,7 @@ If so, how might we solve the issue of case sensitivity?
 events %>% 
   select(cand_restname, description) %>% 
   filter(str_detect(str_to_lower(description), "naacp"))
+
 ```
 
 This method is a good strategy to use almost anytime you're searching in this way  
