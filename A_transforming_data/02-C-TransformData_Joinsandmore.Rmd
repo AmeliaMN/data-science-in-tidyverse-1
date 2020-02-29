@@ -49,31 +49,39 @@ key_house_historical
 ```
 
 
+This is a common thing to see - ables designed to be joined together based on a common key.  
+  
+In this case, we have the house district itself as the common key between the two tables.  
+  
+We'll use dplyr's `inner_join()` function to match the tables based on that column.  
+Let's see how that works:  
 
 ```{r}
-#` This is a common thing to see - ables designed to be joined together based on a common key.
-#  
-# In this case, we have the house district itself as the common key between the two tables.
-#   
-# We'll use dplyr's `inner_join()` function to match the tables based on that column.  
-# Let's see how that works
 
 inner_join(key_house_results, key_house_historical)
 
-# Wait, that's it? We haven't even told it what to join on.  
-# That's because if the two tables share columns with the same name, it defaults to use them for the join.  
-#   
-# If you need to specific which columns in each table to match together, you do it like this:
+```
 
-# inner_join(table1, table2, by = c("table1_columnname" = "table2_columnname"))
+Wait, *that's it*? We haven't even told it *what* to join on.  
+  
+That's because if the two tables share columns with the same name, it defaults to use them for the join.  
+  
+If you need to specific which columns in each table to match together, you do it like this:  
+  
+`inner_join(table1, table2, by = c("table1_columnname" = "table2_columnname"))`  
+  
+We can also use the pipe to write out a join. It depends on your preference.  
 
-# We can also use the pipe to write out a join. It depends on your preference.
-
+```{r}
 key_house_results %>% 
   inner_join(key_house_historical)
 
-# Now with an explicit mentioning of the column to join
+```
 
+
+Now with an explicit mentioning of the column to join:
+
+```{r}
 key_house_results %>% 
   inner_join(key_house_historical, by = "house_dist")
 
