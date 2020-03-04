@@ -291,7 +291,7 @@ events %>%
 
 ```
 
-We'll next take a closer look at string functions now using the stringr package.  
+We'll next take a closer look at string functions later in this sequence.
   
 First, are there questions? Let's discuss.
 
