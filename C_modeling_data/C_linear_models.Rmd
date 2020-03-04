@@ -1,32 +1,29 @@
 ---
 title: "Stats in R"
-author: Olga Pierce, University of Nebraska-Lincoln
-output: html_notebook
+author: Amelia McNamara
+output: html_document
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-This will help us focus on the goal of the code (understanding stats better), instead of the code itself, which is a means to an end.
-
-You can take this notebook with you, which will provide templates to execute various analyses.
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+```
 
 ### Install some extra packages (if needed)
 
-```{r}
+```{r, eval=FALSE}
 install.packages("modelr")
-install.packages("epiR")
 install.packages ("janitor")
+install.packages("skimr")
 ```
 
-### Call packages
+### Load packages
 
 ```{r}
 library(tidyverse)
 library(modelr)
 library(broom)
-library(epiR)
 library(janitor)
+library(skimr)
 ```
 
 ### Load data
@@ -41,37 +38,37 @@ schools_data <- read_csv("ILschools.csv")
 
 The readr package decisions seem reasonable. Let's have a look at the top of our table. Scroll through to the right, paying special attention to our percentage columns. 
 
-```{r}
-head(schools_data)
-```
 
 ### Fix column headers
 
 The janitor package fixes a lot of common data hygeine problems. In this case, we'll change these hideous and inconsistent column names to conform with R conventions
 
 ```{r}
-schools_data <- schools_data %>% clean_names()
-head(schools_data)
+names(schools_data)
+schools_data <- schools_data %>% 
+  clean_names()
+names(schools_data)
 ```
 
 
 ### Learn a bit about our columns from the get-go
 
+
 ```{r}
-summary(schools_data)
+skim(schools_data)
 ```
 
 We can see that the various columns have very different means. We can also see that the means and medians can be very different. This indicates to us that the distributions are different, and not normal.
 
 ## Exploring distributions with ggplot
 
-It's a very powerful graphics library in R. We won't dwell too much on ggplot syntax here, but I encourage you to keep working on it.
+As we've seen, `ggplot2` is a very powerful graphics library! It can be used to make production-quality graphics, but it's also a good tool in your toolbox for doing quick checks on your data.  
 
-First, let's look at what's known as a normal distribution.
+First, let's generate some (fake!) data to look at what's known as a normal distribution.
 
 ```{r}
-set.seed(1)
-df <- data.frame(PF = 10*rnorm(10000))
+set.seed(1) # makes the randomness across computers
+df <- tibble(PF = 10*rnorm(10000))
 ggplot(df, aes(x = PF)) + 
     geom_histogram(aes(y =..density..),
                    breaks = seq(-50, 50, by = 5), 
@@ -84,21 +81,17 @@ stat_function(fun = dnorm, args = list(mean = mean(df$PF), sd = sd(df$PF)))
 
 
 ```{r}
-print(paste0("mean: ", round(mean(df$PF),0)))
-print(paste0("median: ", round(median(df$PF),0)))
+df %>%
+  summarize(mean = mean(PF), median = median(PF))
 ```
 
-In this distribution, the mean (aka 'average') and the median are equal, and both sides are symmetrical around them. But this is unusual in the real world, so looking at distributions can tell us a lot about 
+In this distribution, the mean (aka 'average') and the median are essentially equal (and, almost equal to zero), and both sides are symmetrical around them. But this is unusual in the real world. 
 
 Let's start with the distribution of test scores, which we'll make with ggplot. 
 
 ```{r}
-# First tell ggplot which data and variable to use
-c <- ggplot(schools_data, aes(parc_cpct))
-
-# Then we tell ggplot which viz to make
-
-c + geom_histogram(binwidth = 10)
+ggplot(schools_data, aes(x = parc_cpct)) +
+  geom_histogram(binwidth = 10)
 ```
 
 What does this tell us about the distribution of school test-passing rates? This is called skew.
@@ -106,13 +99,8 @@ What does this tell us about the distribution of school test-passing rates? This
 Next let's look at the distribution of the percent black variable
 
 ```{r}
-# First tell ggplot which data and variable to use
-
-c <- ggplot(schools_data, aes(pct_black))
-
-# Then we tell ggplot which viz to make
-
-c + geom_histogram(binwidth = 10)
+ggplot(schools_data, aes(pct_black)) +
+  geom_histogram(binwidth = 10)
 ```
 
 What does this shape tell us about schools in Illinois?
@@ -138,57 +126,121 @@ elementary_schools <-
 Now let's plot the relationship between the percent of a school's students who are low-income and the percent who achieved proficiency on the PARCC exam.
 
 ```{r}
-# Define the x and y variables
-a <- ggplot(elementary_schools, aes(pct_low_inc, parc_cpct))
-
-# Plot points
-a + geom_point(color = "turquoise", alpha = .6)
+ggplot(elementary_schools, aes(x = pct_low_inc, y = parc_cpct)) +
+  geom_point(color = "turquoise", alpha = .6)
 ```
 
 We can see that in general a higher rate of low-income students at a school is associated with a lower rate of passing the exam.
 
-Let's formalize this by fitting a line.
+Let's formalize this by adding a line to our plot. `ggplot2` can fit a "line of best fit" by using a particular `geom_` function, `geom_smooth`
 
 ```{r}
-a + geom_point(color = "turquoise", alpha = .6) + geom_smooth(method = lm)
+ggplot(elementary_schools, aes(x = pct_low_inc, y = parc_cpct)) +
+  geom_point(color = "turquoise", alpha = .6) + 
+  geom_smooth(method = "lm")
 ```
+
+This confirms what we could see visually. But, if you were a statistician you would want the equation of that line, so you could interpret the slope and y-intercept. Unfortunately, we can't get that information from the plot, so we need to "fit" the model separately. 
+
+We'll use the `lm()` command. Much like other commands in R, you can run `lm()` by itself without saving it into a variable, 
+
+```{r}
+lm(parc_cpct ~ pct_low_inc, data = elementary_schools)
+```
+
+The syntax here is $y~x$, or response_variable~explanatory variable. A response variable is one that you think might "respond" in some way. An explanatory variable is one you think might "explain" the variation in the response. In this case, we believe the percentage of low income students might help explain the variability in the percentage of students who pass the test. 
+
+Remember y = mx + b ? What does the output above tell us? Let's try interpreting those model coefficients. Here are the generic sentences I prefer:
+
+**Intercept** If the value of [explanatory variable] was zero, our model would predict [response variable] to be [intercept value].
+
+**Slope** For a one-[unit] increase in [explanatory variable], our model would predict a [slope value]-[unit] [increase/decrease] in [response variable]. 
+
+Let's apply that to this model:
+
+
+
+
+
+
+
+As with many things in R, though, you will probably want to save your model object with a name, so you can use it later. 
 
 ```{r}
 low_inc_mod <- lm(parc_cpct ~ pct_low_inc, data = elementary_schools)
-summary(low_inc_mod)
 ```
 
-Remember y = mx + b ? What does the output above tell us?
+When we run this code, nothing prints out. But, a new object should appear in our RStudio Environment pane. Now, we can run R functions on that model object. The most useful one is `summary()`,
+
+```{r}
+summary(low_inc_mod)
+```
+The same model coefficients are shown here, but there is also a lot more information about things like the $R^2$ value. 
+
 
 You try: Run a linear regression that shows the relationship between the percent white and the percent who passed the exam. What do we learn from this? How do we put it into words?
+
+```{r}
+
+```
+
 
 ### Multiple regression
 
 Does a school being in Chicago affect these results? First, let's consider this visually. 
 
 ```{r}
-a <- ggplot(elementary_schools, aes(pct_low_inc, parc_cpct, color = chi))
-a + geom_point(alpha = .5)
+ggplot(elementary_schools, aes(pct_low_inc, parc_cpct, color = chi)) +
+  geom_point(alpha = .5)
 ```
+
+It seems like there might be something going on, but it's a little hard to tell. Let's try adding a line,
+
 
 ```{r}
-a + geom_point(alpha = .5) + geom_smooth(method = "lm")
+ggplot(elementary_schools, aes(pct_low_inc, parc_cpct, color = chi)) +
+  geom_point(alpha = .5) +
+  geom_smooth(method = "lm")
 ```
 
-Let's run a new regression that includes the 'chi' variable. And then summarize output.
+It does look like there is some difference there. By default, when you add a `geom_smooth` to a plot that has a color variable, it makes two lines. And, it lets them have both different slopes and different intercepts. Typically, though, when we are modeling we want to force the slopes to be the same and only vary the intercepts, unless we have a very good intuition about why the slopes would be different. 
+
+Let's run a new regression that includes the 'chi' variable, and then summarize output. If we want to use multiple variables in our model, we add them with the `+` sign. 
 
 ```{r}
 multi_mod <- lm(parc_cpct ~ pct_low_inc + chi, data = elementary_schools)
 summary(multi_mod)
 ```
 
-Looking better, but the output is still pretty ugly. We can make it more useful using the broom packaage.
+How do we interpret these coefficients? The first problem is I've only given you sample sentences for the intercept and for one quantitative variable. But now we have a categorical variable, as well!
+
+The generic sentence for a categorical variable is
+
+Compared to [the reference group], our model would predict that [the group we're considering] to have a [response variable] that is [coefficient value]-[units] [higher/lower]. 
+
+Let's apply that here. 
+
+
+
+There's one more wrinkle, though. We have more than one variable, and when R fits the model it is finding the best fit lines considering both variables at once. So, we need to complicate our interpretation sentences to reflect that. Statisticians disagree, but I think adding "holding all else constant" to the end of the sentence is a fine way to go. Let's try that here:
+
+
+
+### Cleaning up model output
+
+The output from `summary()` is pretty ugly. We can make it more useful using the broom packaage.
 
 ```{r}
 tidy(multi_mod)
 ```
 
-Now it's a data frame, instead of that weird model object.
+Now it's a data frame, instead of that weird model object. We can work with this using the data-wrangling tools we learned from `dplyr`. 
+
+```{r}
+tidy(multi_mod) %>%
+  filter(term == "pct_low_inc")
+```
+
 
 You practice. Run a linear model where our predictors are pct_white and chi. Then clean up your output using broom.
 
@@ -196,29 +248,36 @@ You practice. Run a linear model where our predictors are pct_white and chi. The
 
 ```
 
-If we feed our original data frame and our model through the augment() function, it will calculate fitted values for us.
+### Fitted values
+
+If we feed a model through the augment() function, it will calculate fitted (or "predicted") values for us.
+
+```{r}
+augment(multi_mod)
+```
+
 
 A fitted, or predicted, value is the percent PARCC proficiency our model suggests would be expected for this school given the terms in our model (in this case the percent of a school's students who are low-income and whether the school is in Chicago).
 
-```{r}
-mod_grid <- lm(parc_cpct ~ pct_low_inc + chi, data = schools_data, na.action = "na.exclude") %>% augment(multi_mod, elementary_schools) 
-View(head(mod_grid,20))
-```
+A residual is the difference between the **actual** PARCC proficiency of a school, and the **fitted** value our model predicted. We write this as $observed - expected$ or $y_i-\hat{y}_i$. We can see residuals by scrolling over in the augmented dataframe. 
 
 The difference between the fitted value and the actual value can be interpreted as whether a school is over- or under-performing. We can plot this.
 
 To keep our plot from being too busy, let's filter out values that are not outliers.
 
 ```{r}
-mod_grid <- mod_grid %>% mutate(residual = .fitted - parc_cpct) %>% filter(residual < -20 | residual > 20)
+multi_mod_augment <- multi_mod %>%
+  augment() 
+multi_mod_outliers <- multi_mod_augment %>% 
+  filter(.resid < -20 | .resid > 20)
 ```
 
 
 
 ```{r}
-ggplot(mod_grid, aes(x = pct_low_inc, y = parc_cpct)) +
+ggplot(multi_mod_outliers, aes(x = pct_low_inc, y = parc_cpct)) +
   geom_segment(aes(xend = pct_low_inc, yend = .fitted), alpha = .2) +
-  geom_point(aes(color = residual),alpha = .8) +
+  geom_point(aes(color = .resid),alpha = .8) +
   scale_color_gradient2(low = "blue", mid = "white", high = "red") +
   guides(color = FALSE) +
   geom_point(aes(y = .fitted)) +
@@ -230,12 +289,89 @@ ggplot(mod_grid, aes(x = pct_low_inc, y = parc_cpct)) +
 Let's find them.
 
 ```{r}
-View(mod_grid %>% arrange(residual))
+multi_mod_outliers %>% 
+  arrange(.resid)
+```
+
+From this, we can see that row 106 is particularly far off from our predictions. But, we don't know which school it is, because we lost the variables that weren't used in making our model. Luckily, there's a way to fix that! We can pass the dataset as an argument to the `augment` function.
+
+```{r}
+multi_mod_outliers <- multi_mod %>%
+  augment(elementary_schools) %>% 
+  filter(.resid < -20 | .resid > 20)
+multi_mod_outliers %>%
+  arrange(.resid)
 ```
 
 Story language:
 
+Swan Hillman Elementary School underscored what would be expected for a school with a similar number of low-income students in Chicago by 47 percentage points. 
+
+We can always `arrange()` the other direction, too. 
+
+```{r}
+multi_mod_outliers %>%
+  arrange(desc(.resid))
+```
+
+
 Eisenhower Elementary outscored what would be expected for a similar school with mostly low-income students by 73 percentage points.
+
+### Assessing model conditions
+
+Linear models are only reliable for predictions and inference when their conditions are met. The conditions can be remembered by the acronym LINE.
+
+- Linearity
+- Independence
+- Normality
+- Equality of variance
+
+To assess these conditions, we need to look at plots of residuals.
+
+```{r}
+  ggplot(multi_mod_augment, aes(x=.fitted, y=.resid)) +
+  geom_point()+
+  geom_smooth(se=FALSE)
+```
+
+In this plot, we are looking for linearity (we want that middle line to be nice and flat) and equality of variance (we want the band of residuals to be the same width all the way across.)
+
+In this case, linearity looks okay to me, but equality of variance seems to be violated. This means we actually shouldn't make predictions from this model! 
+
+The other two conditions are independence (I call this the "thinking condition") and normality. We want our residuals to be normally distributed. There are a couple ways to check this.
+
+One is to make a histogram, just like we did at the beginning of this document. 
+
+```{r}
+ggplot(multi_mod_augment, aes(x = .resid)) + 
+    geom_histogram(aes(y =..density..),
+                  # breaks = seq(-50, 50, by = 5), 
+                   colour = "black", 
+                   fill = "deepskyblue") +
+stat_function(fun = dnorm, args = list(mean = mean(multi_mod_augment$.resid), sd = sd(multi_mod_augment$.resid)))
+```
+To me, this looks to be non-normal. I can see a skew there. Statisticians like to look at a "QQ" or "quantile-quantile" plot to assess normality. 
+
+```{r}
+ggplot(multi_mod_augment, aes(sample=.resid)) +
+  stat_qq() +
+  stat_qq_line()
+```
+
+For the normality condition to be upheld, we want the dots to fall along the line. In this case, the dots are pulling away from the line in a "s-shape." A "c-shape" would also be bad. 
+
+In order to have a model we can trust, we need to fix these violations. There are rules of thumb to help, but almost always what you need is a log transformation. We'll use the `log()` function, which in R is the natural log.
+
+```{r}
+ggplot(elementary_schools) + geom_histogram(aes(x=parc_cpct))
+
+
+lm(log(parc_cpct) ~ pct_low_inc + chi, data = elementary_schools) %>%
+  augment() %>%
+  ggplot(aes(x=.fitted, y=.resid)) +
+  geom_point()+
+  geom_smooth(se=FALSE)
+```
 
 ### Logistic regression
 
@@ -306,6 +442,8 @@ That's not always the case though. Here's an example from a ProPublica story abo
 https://www.propublica.org/article/minority-neighborhoods-higher-car-insurance-premiums-methodology
 
 
+
+<!-- These materials modified from material presented by Olga Pierce, University of Nebraska-Lincoln, at NICAR 2019 -->
 
 
 
