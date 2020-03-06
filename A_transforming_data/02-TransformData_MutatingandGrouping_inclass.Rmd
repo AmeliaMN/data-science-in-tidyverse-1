@@ -1,0 +1,302 @@
+---
+title: "NICAR 2020 - Transforming Data, Mutating and Grouping"
+author: ""
+date: ""
+output: html_document
+---
+
+Load the packages we'll need
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+
+events <- readRDS("data/events_saved.rds")
+
+```
+
+Another key function of dpylr/tidyverse - **MUTATE**
+
+### ADDING COLUMNS WITH MUTATE  
+  
+To add a column, you give it a name, then a single equal sign (=), then define what's in it.  
+Here's a test example:
+
+```{r}
+events %>% 
+  mutate(mycolumn = "hi there")
+
+```
+
+
+```{r}
+events %>% 
+  mutate(electioncycle = 2020)
+
+```
+
+Now let's try adding our date-related columns.  First we'll try year.
+
+```{r}
+events %>% 
+  mutate(year = year(date))
+
+```
+
+We can add multiple columns as part of one mutate call. Let's do year, month and day in one swoop.  
+*You try it:*
+
+```{r}
+
+
+
+
+
+```
+
+
+This is a good time to remind ourselves that if we want to save our new columns, need to *create new object* or *overwrite*
+
+```{r}
+events <- events %>% 
+  mutate(year = year(date),
+         month = month(date),
+         day = day(date))
+
+```
+
+Now we can use our new columns to filter
+
+```{r}
+events %>% 
+  filter(year == 2019,
+         month == 1)
+
+```
+
+Show me just Kamala Harris events in January 2019. *You try it:*
+
+
+```{r}
+
+
+
+
+```
+
+
+### GROUPING AND AGGREGATING  
+ 
+ 
+Being able to aggregate our campaign trips would be helpful at this point, right?  
+Let's get into how to do it using the tidyverse and dplyr's `group_by()` and `summarise()` 
+  
+Have you all grouped before in other languages? In base R itself?  Let's discuss.  
+  
+Grouping to see how many trips each candidate have been on in our data  
+Getting used to `n()`
+
+```{r}
+events %>% 
+  group_by(cand_lastname) %>% 
+  summarise(n())
+
+```
+
+now let's add arrange to see who has the most trips
+
+```{r}
+# (not run)  
+# events %>% 
+#   group_by(cand_lastname) %>% 
+#   summarise(n()) %>% 
+#   arrange(n)
+
+```
+
+hmm - what's going on here? Look closely and see what the generated count column is called
+
+```{r}
+# events %>% 
+#   group_by(cand_lastname) %>% 
+#   summarise(n()) %>% 
+#   arrange("n()")
+
+```
+
+That doesn't work either.   
+  
+Oy - this is getting frustrating. How do we solve?  
+By doing this: giving the new column a name of our own.  
+Check it out:
+
+```{r}
+events %>% 
+  group_by(cand_lastname) %>% 
+  summarise(n = n()) 
+
+```
+
+Now we can do:
+
+```{r}
+events %>% 
+  group_by(cand_lastname) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n))
+
+```
+
+Bingo.  
+We can call the new columnn anything we want. "n" is a common thing for counts,  
+but can be anything. 
+ 
+*You try it this time* - do the same as above but give the counted column your own name:
+
+```{r}
+
+
+
+
+
+
+```
+
+Now for the magic  
+Because this counting is such a common operation, and because the `n()` becomes a pain to deal with...  
+...there is a special shortcut that we can use that collapses everything into one function.  
+It's called `count()`.
+
+```{r}
+events %>% 
+  count(cand_lastname)
+```
+
+
+```{r}
+# sorting
+
+events %>% 
+  count(cand_lastname) %>% 
+  arrange(desc(n))
+```
+
+*You try this time* - What are the top states visited in descending order?
+
+```{r}
+# top states visited
+
+
+
+
+```
+
+How about the top months for trips?
+
+```{r}
+# top months
+
+
+
+
+```
+
+Which single day had the most trips?
+```{r}
+# top single day for most trips
+
+
+
+
+
+```
+
+we can also group by **more than one** variable  
+which candidates have gone to which states?
+
+```{r}
+events %>% 
+  count(cand_lastname, state) %>% 
+  arrange(state, desc(n))
+
+```
+
+what about the most frequent types of events for each candidate?
+
+```{r}
+events %>% 
+  count(cand_lastname, event_type) %>% 
+  arrange(cand_lastname, desc(n))
+
+```
+
+Here we're seeing some potentially dirty data that needs cleaning.  
+The event types seem to be inconsistently entered.  
+How might we standardize them? Let's take a look.  
+
+### USING CONDITIONAL FUNCTIONS
+  
+A function that returns a vector the same length as the input is called **vectorized**.  
+* `ifelse()`  
+  
+Let's see `ifelse()` in action
+
+```{r}
+events %>% 
+  mutate(new_type = ifelse(event_type == "event speech", "TEST", event_type)) 
+
+```
+
+Let's talk about what just happened?
+
+Ok, now let's clean a few columns for real:
+
+```{r}
+events %>% 
+  mutate(new_type = ifelse(event_type == "campaign event", "event", event_type),
+         new_type = ifelse(event_type == "campaign events", "event", new_type),
+         new_type = ifelse(event_type == "event speech", "speech", new_type)
+         ) 
+
+```
+
+This can start to get a little tedious, though.  
+Enter `case_when`...
+
+```{r}
+events %>%
+  mutate(new_type = case_when(
+            event_type == "campaign event" ~ "event",
+            event_type == "campaign events" ~ "event",
+            event_type == "event speech" ~ "speech",
+            event_type == TRUE ~ "other"
+      ))
+
+```
+
+Of course, you may be asking: wouldn't it be nice if we could standardize...  
+...based on certain keywords or patterns?  Instead of spelling out every variation.  
+  
+The answer is yes. Thanks to "string functions"...!  
+  
+We'll show a quick example of what that looks like, and then start from the beginning in the next module.  
+
+```{r}
+events %>%
+  mutate(new_type = case_when(
+    str_detect(event_type, "event") ~ "event")
+  )
+
+```
+
+We'll next take a closer look at string functions later in this sequence in step 04.
+  
+First, are there questions? Let's discuss.
+
+
+
+
+
+
