@@ -1,5 +1,5 @@
 ---
-title: "Transforming Data - Part B - NICAR 2020"
+title: "NICAR 2020 - Transforming Data, String Functions"
 output: html_document
 ---
 

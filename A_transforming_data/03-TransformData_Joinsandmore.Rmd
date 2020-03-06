@@ -1,5 +1,5 @@
 ---
-title: "Transforming Data - Part C - NICAR 2020"
+title: "NICAR 2020 - Transforming Data, Joining"
 output: html_document
 ---
 

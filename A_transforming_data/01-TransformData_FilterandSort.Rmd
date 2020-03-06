@@ -1,6 +1,6 @@
 ---
-title: "Transforming Data, Part A"
-author: "Aaron Kessler"
+title: "NICAR 2020 - Transforming Data, Filtering and Sorting"
+author: ""
 date: ""
 output: html_document
 ---
