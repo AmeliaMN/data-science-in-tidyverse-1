@@ -3,11 +3,13 @@ output:
   html_document: default
   pdf_document: default
 ---
-# Exploring the tidyverse
+# Exploring the tidyverse in R 
 
-This is the repo for the one-day workshop *"Exploring the tidyverse"* taught at [NICAR](https://www.ire.org/conferences/nicar-2019/)'s 2019 conference in Orange County, California.
+This is the repo for the one-day workshop *"Exploring the tidyverse in R"* taught at [NICAR](https://www.ire.org/events-and-training/conferences/nicar-2020)'s 2020 conference in New Orleans, LA.
 
-It contains significant changes and additions to the original modules by Hadley Wickham, tailored to a data journalism audience and one-day time frame, including new training data and materials on visualization from Andrew Ba Tran and his [R for Journalists](https://learn.r-journalism.com/en/), my own materials and training sequences on transforming data, and Olga Pierce's materials on modeling and statistics. We did keep most of the slides and cheatsheets from the original repo, so that they're available for reference, but created new coding sequences that fall into three main modules:
+If you want to trace the provenance of these materials... Originally, materials were by Hadley Wickham. For 2019, the materials were tailored to a data journalism audience and one-day time frame, including new training data and materials on visualization from Andrew Ba Tran and his [R for Journalists](https://learn.r-journalism.com/en/), Aaron Kessler's materials and training sequences on transforming data, and Olga Pierce's materials on modeling and statistics. For 2020, we've edited and refined these materials to be even better, and brought in Amelia McNamara. 
+
+The course has three main modules:
 
 A. Transforming Data
 
@@ -31,7 +33,7 @@ install.packages(c("tidyverse", "lubridate", "janitor", "rmarkdown", "usethis"))
 Then you can grab a local copy of all the slides, code, data, and cheatsheets with:
 
 ```R
-usethis::use_course("https://bit.ly/2XJD5fB")
+usethis::use_course("")
 ```
 
 To get back to this project later, double-click on "data-science-in-the-tidyverse.Rproj".
@@ -43,5 +45,4 @@ To get back to this project later, double-click on "data-science-in-the-tidyvers
 <span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">*Data Science in the tidyverse*</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/cwickham/data-science-in-the-tidyverse" property="cc:attributionName" rel="cc:attributionURL">Charlotte Wickham</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.  Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/rstudio/master-the-tidyverse" rel="dct:source">https://github.com/rstudio/master-the-tidyverse</a>.
 
 ## Acknowledgements
-
-I have forked this repo from [Hadley Wickham](https://github.com/hadley/data-science-in-tidyverse) based on his session at NICAR 2018, who in turn forked it from [Charlotte Wickham](https://github.com/cwickham/data-science-in-tidyverse), who forked it from [RStudio](https://github.com/rstudio/master-the-tidyverse). Thanks to [Charlotte](http://cwick.co.nz) and [Garrett](https://github.com/garrettgman) for creating the slides and cheatsheet materials.
+I forked this repo from [Aaron Kessler's](https://github.com/amkessler/data-science-in-tidyverse) NICAR 2019 repo, who forked from [Hadley Wickham](https://github.com/hadley/data-science-in-tidyverse) based on his session at NICAR 2018, who in turn forked it from [Charlotte Wickham](https://github.com/cwickham/data-science-in-tidyverse), who forked it from [RStudio](https://github.com/rstudio/master-the-tidyverse). Thanks to [Charlotte](http://cwick.co.nz) and [Garrett](https://github.com/garrettgman) for creating the slides and cheatsheet materials.
