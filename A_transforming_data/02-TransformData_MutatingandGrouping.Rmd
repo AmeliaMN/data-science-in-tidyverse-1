@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(lubridate)
 
-events <- readRDS("events_saved.rds")
+events <- readRDS("data/events_saved.rds")
 
 ```
 
@@ -291,7 +291,7 @@ events %>%
 
 ```
 
-We'll next take a closer look at string functions later in this sequence.
+We'll next take a closer look at string functions later in this sequence in step 04.
   
 First, are there questions? Let's discuss.
 

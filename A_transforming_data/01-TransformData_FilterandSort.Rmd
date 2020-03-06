@@ -205,7 +205,7 @@ Let's take a look at some more intersting data now and try out some of these met
 Load in data of prez candidate campaign trips between midterms and end of Jan. 
 
 ```{r}
-events <- readRDS("events_saved.rds")
+events <- readRDS("data/events_saved.rds")
 
 ```
 
