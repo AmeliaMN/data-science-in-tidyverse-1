@@ -326,7 +326,9 @@ Linear models are only reliable for predictions and inference when their conditi
 - Normality
 - Equality of variance
 
-To assess these conditions, we need to look at plots of residuals.
+I always say independence is the "thinking condition," because you can't assess it using plots. Instead, you have to think about whether you believe observations in your data are independent from one another. Do we think a particular elementary school is independent from another elementary school? Perhaps not, if they are in the same district or share a principal. But, there is little to be done to correct this problem once we have data collected, and in cases like this, no way to collect the data differently.
+
+For the other three conditions, we need to look at plots of residuals. The first, and most important, residual plot shows the relationship between residuals and fitted values. 
 
 ```{r}
   ggplot(multi_mod_augment, aes(x=.fitted, y=.resid)) +
@@ -338,7 +340,7 @@ In this plot, we are looking for linearity (we want that middle line to be nice 
 
 In this case, linearity looks okay to me, but equality of variance seems to be violated. This means we actually shouldn't make predictions from this model! 
 
-The other two conditions are independence (I call this the "thinking condition") and normality. We want our residuals to be normally distributed. There are a couple ways to check this.
+The other two conditions we can assess with a plot is normality. We want our residuals to be normally distributed. There are a couple ways to check this.
 
 One is to make a histogram, just like we did at the beginning of this document. 
 
@@ -350,7 +352,7 @@ ggplot(multi_mod_augment, aes(x = .resid)) +
                    fill = "deepskyblue") +
 stat_function(fun = dnorm, args = list(mean = mean(multi_mod_augment$.resid), sd = sd(multi_mod_augment$.resid)))
 ```
-To me, this looks to be non-normal. I can see a skew there. Statisticians like to look at a "QQ" or "quantile-quantile" plot to assess normality. 
+To me, this looks to be non-normal. I can see a skew there. The other option (statisticians love this one!) is to look at a "QQ" or "quantile-quantile" plot to assess normality. 
 
 ```{r}
 ggplot(multi_mod_augment, aes(sample=.resid)) +
@@ -360,13 +362,15 @@ ggplot(multi_mod_augment, aes(sample=.resid)) +
 
 For the normality condition to be upheld, we want the dots to fall along the line. In this case, the dots are pulling away from the line in a "s-shape." A "c-shape" would also be bad. 
 
-In order to have a model we can trust, we need to fix these violations. There are rules of thumb to help, but almost always what you need is a log transformation. We'll use the `log()` function, which in R is the natural log.
+In order to have a model we can trust, we need to fix these violations. There are rules of thumb to help (searching for "Tukey's bulging rule" to learn more), but in many cases what you need is a log transformation. 
 
 ```{r}
-ggplot(elementary_schools) + geom_histogram(aes(x=parc_cpct))
+skim(elementary_schools)
+summary(low_inc_mod)
+ggplot(elementary_schools) + geom_histogram(aes(x=sqrt(parc_cpct)))
+plot(multi_mod)
 
-
-lm(log(parc_cpct) ~ pct_low_inc + chi, data = elementary_schools) %>%
+lm(sqrt(parc_cpct) ~ pct_low_inc + chi, data = elementary_schools) %>%
   augment() %>%
   ggplot(aes(x=.fitted, y=.resid)) +
   geom_point()+
@@ -375,72 +379,109 @@ lm(log(parc_cpct) ~ pct_low_inc + chi, data = elementary_schools) %>%
 
 ### Logistic regression
 
-Add a column for 'good school' where more than half of the students have passed the test.
+Another common type of model is a logistic regression model. For this type of model, our response variable (the thing we think might "respond") needs to be binary: a yes/no, TRUE/FALSE, or 0/1 variable. We can still use any type of predictor in the model, but the interpretation of the model will be different. In our dataset, we don't have a variable that is binary, but we can create one (this can be a bad practice, so we're mostly doing it for illustration).
+
+For another `dplyr` review, add a new column to the `elementary_schools` data called `good_school`, which is whether or not more than half of the students have passed the test.
 
 ```{r}
 
 ```
 
-Now let's use more than one variable to predict whether a school is "good".
+In order to run logistic regression, we need to use a different function-- this one is called `glm()`, for Generalized Linear Models. `glm` by default produces a linear regression model, so we can try the same simple regression model we started with,
 
 ```{r}
+glm(parc_cpct ~ pct_low_inc, data = elementary_schools)
+```
 
+What is different about the output?
+
+In order to run a logistic regression model, we need to use a binary response variable (`good_school`, in this case), and change the "family" of the model to be "binomial" (this is the theoretical probability model that goes with logistic regression, I'm happy to explain more offline).
+
+Now let's use two variables to predict whether a school is "good".
+
+```{r}
+multi_logistic <- glm(good_school~pct_low_inc + chi, data=elementary_schools, family="binomial")
 ```
 
 We can use our summary function again to see the output of our regression.
 
 ```{r}
+summary(multi_logistic)
 ```
 
-Let's unpack what our results mean.
 
-You try: Let's create a variable indicating whether a school is in Cook County or not, called 'cook'.
+We can't interpret our coefficients the same way anymore. In fact, these numbers represent a "space" that is hard for our brains to reason about-- log-odds space. We would rather think in odds space or probability space. [Amelia-- add link to 291 lab]
+
+Again, we can `augment()` our model to help us think in a better space. 
 
 ```{r}
-
+multi_logistic_augmented <- augment(multi_logistic, elementary_schools)
 ```
 
-Now let's run a logistic regression with cook and pct_black as our predictors and good_school as our dependent variable, then summarize.
+If we plot our data, we get something that looks linear-- but it's in log-odds space. 
 
 ```{r}
-
+ggplot(multi_logistic_augmented) + geom_point(aes(x=pct_low_inc, y=.fitted, color=chi))
 ```
 
-What do we learn?
-
-You try: Run a logistic regression with chi and pct_white as our predictors, and good_school as our dependent variable. Then summarize.
+We'd rather think about probabilities or odds. Let's `mutate` to add those.
 
 ```{r}
-
+multi_logistic_augmented <- multi_logistic_augmented %>%
+  mutate(odds = exp(.fitted), probability = odds / (1 + odds))
 ```
 
-What do we learn?
-
-What are some other questions we could answer with a logistic regression?
+Now, we can plot in those "spaces"
 
 ```{r}
-
+ggplot(multi_logistic_augmented) + geom_point(aes(x=pct_low_inc, y=odds, color=chi))
+ggplot(multi_logistic_augmented) + geom_point(aes(x=pct_low_inc, y=probability, color=chi))
 ```
 
-Non-linear relationships
 
-Of course, not all relationships are strictly linear. How do we get a sense of the curve's shape? Turns out ggplot will help us find this with a different type of geom_smooth. 
+The probability space is the one that most accurately shows how our model looks. For two schools with the same `pct_low_inc` our model assigns a much higher probability of passing the rest for schools in Chicago than schools outside of Chicago. 
+
+Let's look back at our model,
 
 ```{r}
-# Define the x and y variables
-a <- ggplot(elementary_schools, aes(pct_low_inc, parc_cpct))
-
-# Plot points
-a + geom_point(color = "turquoise", alpha = .6) +
-  geom_smooth(method = "loess")
+summary(multi_logistic)
 ```
 
-Do we think a linear model is appropriate here?
+How can we interpret those coefficients? They have been given to us in log-odds space, so if we want, we can interpret them using the same generic sentences I gave you about coefficients in linear regression.
 
-That's not always the case though. Here's an example from a ProPublica story about redlining in car insurance.
+"For a one-unit increase in `pct_low_inc`, we would expect to see a 0.09086-unit decrease in log-odds of being a good school, holding Chicago status constant."
 
-https://www.propublica.org/article/minority-neighborhoods-higher-car-insurance-premiums-methodology
+"Compared to schools not in Chicago, we would expect the log-odds of being a good school to be 2.00 units higher, holding `pct_low_inc` constant."
 
+Like I said, this "space" doesnt' make much intuitive sense. But, through some algebra that I'm not going to demonstrate, there is a way to make these coefficients easier to interpret, by taking $e^{coefficient}$. In R, we can raise e to a power by using the `exp()` function.
+
+```{r}
+exp(1)
+exp(2)
+```
+More useful is to exponentiate our coefficients,
+
+```{r}
+exp(coef(multi_logistic))
+```
+
+These numbers are more interpretable. Here are the generic sentences:
+
+"For a one-[unit] increase in [explanatory variable], the odds of [response variable success] are [coefficient value] times [higher/lower], holding [all else] constant."
+
+"Compared to [non-reference group], the odds of [response variable success] are [coefficient value] times [higher/lower], holding [all else] constant." 
+
+Let's apply that to these coefficients:
+
+
+
+Does that make sense?
+
+
+
+## More models
+
+There are many more models out there! However, the challenge is always explaining them to a broad audience. I have seen linear regression used successfully in news stories pretty regularly, but logistic regression is a harder sell, and more complicated models even more challenging.
 
 
 <!-- These materials modified from material presented by Olga Pierce, University of Nebraska-Lincoln, at NICAR 2019 -->
