@@ -1,6 +1,6 @@
 ---
 title: 'NICAR 2020: Styling visualizations'
-author: "Amelia McNamara"
+author: "Amelia McNamara @AmeliaMN"
 output:
   revealjs::revealjs_presentation:
     theme: sky
@@ -31,10 +31,7 @@ Remember that Dot Plot we made before?
 ```{r dotplota, fig.width=7, fig.height=6, eval=F}
 library(ggplot2)
 
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
   geom_point()
 ```
 
@@ -43,10 +40,7 @@ ggplot(
 ```{r dotplot, fig.width=7, fig.height=6, echo=F}
 library(ggplot2)
 
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
   geom_point()
 ```
 
@@ -70,17 +64,14 @@ The function is `fct_reorder()` and it works like this
 
 ## Factors
 
-```{r dotplot2, fig.width=7, fig.height=4.5, warning=FALSE}
+```{r dotplot2, fig.width=7, fig.height=4.5, warning=FALSE, message=FALSE}
 library(dplyr)
 library(forcats)
 
 ages <- ages %>%
   mutate(Movie = fct_reorder(Movie, actress_age, .desc = TRUE))
 
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
   geom_point()
 ```
 
@@ -93,18 +84,8 @@ Not a bad looking chart. We can tweak it a little more and turn it into
 This time we're going to use a new `geom_`: `geom_segment()`
 
 ```{r lollipop_chart, fig.width=8, fig.height=8, eval=F}
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
-  geom_segment(
-    aes(
-      x = 0,
-      xend = actress_age,
-      yend = Movie
-    ),
-    color = "gray50"
-  ) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
+  geom_segment(aes(x = 0, xend = actress_age, yend = Movie), color = "gray50") +
   geom_point()
 ```
 
@@ -112,18 +93,8 @@ ggplot(
 
 
 ```{r lollipop_chartb, fig.width=8, fig.height=8, echo=F}
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
-  geom_segment(
-    aes(
-      x = 0,
-      xend = actress_age,
-      yend = Movie
-    ),
-    color = "gray50"
-  ) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
+  geom_segment(aes(x = 0, xend = actress_age, yend = Movie), color = "gray50") +
   geom_point()
 ```
 
@@ -138,19 +109,8 @@ That's easy to do.
 ## Polish for publication
 
 ```{r lollipop_chart_clean, fig.width=8, fig.height=8, eval=F}
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
-  geom_segment(
-    aes(
-      x = 0,
-      y = Movie,
-      xend = actress_age,
-      yend = Movie
-    ),
-    color = "gray50"
-  ) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
+  geom_segment(aes(x = 0, xend = actress_age, yend = Movie), color = "gray50") +
   geom_point() +
   # NEW CODE BELOW
   labs(
@@ -165,19 +125,8 @@ ggplot(
 ## Polish for publication
 
 ```{r lollipop_chart_cleanb, fig.width=8, fig.height=8, echo=F}
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
-  geom_segment(
-    aes(
-      x = 0,
-      y = Movie,
-      xend = actress_age,
-      yend = Movie
-    ),
-    color = "gray50"
-  ) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
+  geom_segment(aes(x = 0, xend = actress_age, yend = Movie), color = "gray50") +
   geom_point() +
   # NEW CODE BELOW
   labs(
@@ -206,19 +155,8 @@ Let's get rid of the grids and add the numbers to the right of each dot.
 ## More tweaking
 
 ```{r lollipop_chart_annotated, fig.width=8, fig.height=8, eval=F}
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
-  geom_segment(
-    aes(
-      x = 0,
-      y = Movie,
-      xend = actress_age,
-      yend = Movie
-    ),
-    color = "gray50"
-  ) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
+  geom_segment(aes(x = 0, xend = actress_age, yend = Movie), color = "gray50") +
   geom_point() +
   labs(
     x = "Actress age", y = "Movie",
@@ -241,19 +179,8 @@ ggplot(
 ##More tweaking
 
 ```{r lollipop_chart_annotatedb, fig.width=8, fig.height=8, echo=F}
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
-  geom_segment(
-    aes(
-      x = 0,
-      y = Movie,
-      xend = actress_age,
-      yend = Movie
-    ),
-    color = "gray50"
-  ) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
+  geom_segment(aes(x = 0, xend = actress_age, yend = Movie), color = "gray50") +
   geom_point() +
   labs(
     x = "Actress age", y = "Movie",
@@ -341,16 +268,9 @@ Alright, I'm going to tweak it some more by adding actor ages. We just need to a
 
 ```{r lollipop_chart_annotated_men, fig.width=8, fig.height=9, warning=F, message=F, eval=F}
 
+
 ggplot(ages) +
-  geom_segment(
-    aes(
-      x = 0,
-      y = Movie,
-      xend = actress_age,
-      yend = Movie
-    ),
-    color = "gray50"
-  ) +
+  geom_segment(aes(x = 0, y = Movie, xend = actress_age, yend = Movie), color = "gray50") +
   geom_point(aes(x = actress_age, y = Movie), color = "dark green") +
   geom_point(aes(x = actor_age, y = Movie), color = "dark blue") +
   labs(
@@ -377,15 +297,7 @@ ggplot(ages) +
 ```{r lollipop_chart_annotated_menb, fig.width=8, fig.height=9, warning=F, message=F, echo=F}
 
 ggplot(ages) +
-  geom_segment(
-    aes(
-      x = actress_age,
-      y = Movie,
-      xend = actor_age,
-      yend = Movie
-    ),
-    color = "gray50"
-  ) +
+  geom_segment(aes(x = 0, y = Movie, xend = actress_age, yend = Movie), color = "gray50") +
   geom_point(aes(x = actress_age, y = Movie), color = "dark green") +
   geom_point(aes(x = actor_age, y = Movie), color = "dark blue") +
   labs(

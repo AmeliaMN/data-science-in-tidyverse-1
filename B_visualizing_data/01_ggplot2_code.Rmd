@@ -5,7 +5,7 @@ author: "Amelia McNamara"
 
 ## Thank you
 
-These slides were (extremely lightly) modified from those used by Andrew Tran at NICAR 2020. Thanks to Andrew for making them open-source so I could benefit! 
+These slides were (extremely lightly) modified from those used by [Andrew Ba Tran](https://twitter.com/abtran) at NICAR 2020. Thanks to Andrew for making them open-source so I could benefit! 
 
 ## Chart options in Excel
 
@@ -99,7 +99,7 @@ Here's the chart. Run this in your console.
 
 library(ggplot2)
 
-ggplot(data = ages) +
+ggplot(ages) +
   geom_point(mapping = aes(x = actor_age, y = actress_age)) +
   expand_limits(x = 0, y = 0) +
   geom_abline(intercept = 0, col = "light gray")
@@ -259,10 +259,7 @@ Common `geom_bar()` options:
 ## Stacked bar plot
 
 ```{r stacked_bar, fig.width=9, fig.height=5}
-ggplot(
-  data = ages,
-  aes(x = actor, fill = Genre)
-) +
+ggplot(data = ages, aes(x = actor, fill = Genre)) +
   geom_bar()
 ```
 
@@ -289,10 +286,7 @@ What if we changed the `aes()` from `fill` to `color`?
 
 
 ```{r stacked_bar_color, fig.width=9, fig.height=5}
-ggplot(
-  data = ages,
-  aes(x = actor, color = Genre)
-) +
+ggplot(ages, aes(x = actor, color = Genre)) +
   geom_bar()
 ```
 
@@ -310,10 +304,7 @@ Let's go back to `fill=Genre` but this time with a twist.
 Take a look at the code and see if you can spot why it didn't work like it did earlier.
 
 ```{r stacked_bar_fill_fail, fig.width=9, fig.height=5}
-ggplot(
-  data = ages,
-  aes(x = actor), fill = Genre
-) +
+ggplot(ages, aes(x = actor), fill = Genre) +
   geom_bar()
 ```
 
@@ -322,20 +313,14 @@ Do you see it?
 It's the parenthesis in `aes()` -- it closed off before including `fill=Genre` so it wasn't included. Try it this time correctly.
 
 ```{r stacked_bar_fill_fail2, fig.width=9, fig.height=5}
-ggplot(
-  data = ages,
-  aes(x = actor, fill = Genre)
-) +
+ggplot(ages, aes(x = actor, fill = Genre)) +
   geom_bar()
 ```
 
 ## Grouped bar plot
 
 ```{r grouped_bar_plot, fig.width=9, fig.height=5}
-ggplot(
-  data = ages,
-  aes(x = actor, fill = Genre)
-) +
+ggplot(ages, aes(x = actor, fill = Genre)) +
   geom_bar(position = "dodge")
 ```
 
@@ -350,10 +335,7 @@ This is useful for easier comparison within groups.
 It's simple to turn a stacked bar plot into a percent-based chart.
 
 ```{r spinogram, fig.width=9, fig.height=5}
-ggplot(
-  data = ages,
-  aes(x = actor, fill = Genre)
-) +
+ggplot(ages, aes(x = actor, fill = Genre)) +
   geom_bar(position = "fill")
 ```
 
@@ -402,7 +384,7 @@ Useful to transform or rescale the data with.
 ## geom_histogram
 
 ```{r scaling1, warning=F, message=F}
-ggplot(data = ages, aes(x = actor_age)) +
+ggplot(ages, aes(x = actor_age)) +
   geom_histogram(binwidth = 1)
 ```
 
@@ -417,17 +399,14 @@ Common `geom_histogram()` options:
 It makes more sense to apply scalar transformations to while plotting rather than altering the data set itself.
 
 ```{r scaling2}
-ggplot(data = ages, aes(x = actor_age)) +
+ggplot(ages, aes(x = actor_age)) +
   geom_histogram() + scale_x_log10()
 ```
 
 ## Kernel density plot
 
 ```{r kernel, fig.width=9, fig.height=5}
-ggplot(
-  data = ages,
-  aes(x = actress_age)
-) +
+ggplot(ages, aes(x = actress_age)) +
   geom_density(fill = "red")
 ```
 Common `geom_density()` options:
@@ -437,20 +416,14 @@ Common `geom_density()` options:
 * alpha
 
 ```{r kernel2, fig.width=9, fig.height=5}
-ggplot(
-  data = ages,
-  aes(x = actress_age, fill = actor)
-) +
+ggplot(ages, aes(x = actress_age, fill = actor)) +
   geom_density(alpha = .3)
 ```
 
 ## Dot plot
 
 ```{r dotplot, fig.width=8, fig.height=8}
-ggplot(
-  ages,
-  aes(x = actress_age, y = Movie)
-) +
+ggplot(ages, aes(x = actress_age, y = Movie)) +
   geom_point()
 ```
 
@@ -501,45 +474,23 @@ We've made a scatter plot before.
 This time, let's add a `geom_smooth()` layer.
 
 ```{r scatter_fit}
-ggplot(
-  ages,
-  aes(
-    x = actor_age,
-    y = actress_age
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age)) +
   geom_point() +
   geom_smooth()
 ```
 
-We can customize it and throw in a linear regression line. Notice the `~` which is used often in statistical analysis formulas.
+We can customize it and throw in a linear regression line. 
 
 ```{r scatter_fit_lm}
-ggplot(
-  ages,
-  aes(
-    x = actor_age,
-    y = actress_age
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age)) +
   geom_point() +
-  geom_smooth(
-    method = "lm",
-    formula = y ~ x
-  )
+  geom_smooth(method = "lm")
 ```
 
 ## Grouping
 
 ```{r grouping1}
-ggplot(
-  data = ages,
-  aes(
-    x = actor_age,
-    y = actress_age,
-    color = actor
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age, color = actor)) +
   geom_point()
 ```
 
@@ -555,15 +506,7 @@ Let's go crazy and add another variable.
 
 
 ```{r grouping2}
-ggplot(
-  data = ages,
-  aes(
-    x = actor_age,
-    y = actress_age,
-    color = actor,
-    shape = Genre
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age, color = actor, shape = Genre)) +
   geom_point()
 ```
 
@@ -576,15 +519,7 @@ Why did we do this?? I just wanted to show you that the shapes option exist. You
 Okay, what if we try keeping the color and shapes to one variable: *actor*?
 
 ```{r grouping3}
-ggplot(
-  data = ages,
-  aes(
-    x = actor_age,
-    y = actress_age,
-    color = actor,
-    shape = actor
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age, color = actor, shape = actor)) +
   geom_point()
 ```
 
@@ -608,15 +543,7 @@ Like colors, you should limit the palette so it doesn't confuse readers.
 Let's swap out *Genre* for another variable that might make more sense to add to the visualization: *budget*.
 
 ```{r grouping4}
-ggplot(
-  data = ages,
-  aes(
-    x = actor_age,
-    y = actress_age,
-    color = actor,
-    size = budget
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age, color = actor, size = budget)) +
   geom_point()
 ```
 
@@ -637,7 +564,7 @@ We're going to alter the coordinates of the chart so that we get a horizontal ch
 The `coord_flip()` option flips a chart you've been working on from vertical to horizontal or horizontal to vertical. 
     
 ```{r coords}
-ggplot(data = avg_age, aes(x = actor, y = average_age_diff)) +
+ggplot(avg_age, aes(x = actor, y = average_age_diff)) +
   geom_bar(stat = "identity") +
   coord_flip()
 ```
@@ -653,7 +580,7 @@ This is sometimes referred to as "small multiples".
 
 
 ```{r facet_grid, fig.width=9, fig.height=7}
-ggplot(data = ages) +
+ggplot(ages) +
   geom_point(mapping = aes(x = actor_age, y = actress_age)) +
   expand_limits(x = 0, y = 0) +
   geom_abline(intercept = 0, col = "light gray") +
@@ -671,7 +598,7 @@ Take a moment to appreciate how easy this was. This is a pain in the ass in othe
 Want to add another variable? Let's do it. Add `size=budget` the `geom_point()`.
 
 ```{r facet_grid_more, fig.width=9, fig.height=7}
-ggplot(data = ages) +
+ggplot(ages) +
   geom_point(mapping = aes(x = actor_age, y = actress_age, size = budget)) +
   expand_limits(x = 0, y = 0) +
   geom_abline(intercept = 0, col = "light gray") +
@@ -693,7 +620,7 @@ Here are other types of ways to create "small multiples" through facets.
 
 
 ```{r facet_grid2}
-ggplot(data = ages) +
+ggplot(ages) +
   geom_point(mapping = aes(x = actor_age, y = actress_age)) +
   expand_limits(x = 0, y = 0) +
   geom_abline(intercept = 0, col = "light gray") +
@@ -708,7 +635,7 @@ If it was swapped to `facet_wrap(actor~.)` then the grid will split by row.
 
 
 ```{r facet_grid3}
-ggplot(data = ages) +
+ggplot(ages) +
   geom_point(mapping = aes(x = actor_age, y = actress_age)) +
   expand_limits(x = 0, y = 0) +
   geom_abline(intercept = 0, col = "light gray") +
@@ -720,7 +647,7 @@ I find myself using `facet_wrap()` more often because I can customize the number
 
 
 ```{r facet_wrap, fig.width=9, fig.height=6}
-ggplot(data = ages) +
+ggplot(ages) +
   geom_point(mapping = aes(x = actor_age, y = actress_age)) +
   expand_limits(x = 0, y = 0) +
   geom_abline(intercept = 0, col = "light gray") +
@@ -735,13 +662,7 @@ Everything nested in the initial `ggplot()` call will be considered global and a
 
 
 ```{r global, fig.width=9, fig.height=6}
-ggplot(
-  ages,
-  aes(
-    x = actor_age,
-    y = actress_age
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age)) +
   geom_point()
 ```
 
@@ -751,13 +672,7 @@ So in the chart above, `aes()` with *actor_age* and *actress_age* are in the x a
 But I can also pass `aes()` to the `geom_point()` layer, which will make that local and apply to that layer only.
 
 ```{r local, fig.width=9, fig.height=6}
-ggplot(
-  ages,
-  aes(
-    x = actor_age,
-    y = actress_age
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age)) +
   geom_point(aes(color = actor))
 ```
 
@@ -770,14 +685,7 @@ This is very useful if you want to highlight a specific subset from the data.
 
 ages_copy <- ages %>% select(-actor)
 
-ggplot(
-  data = ages,
-  aes(
-    x = actor_age,
-    y = actress_age,
-    color = actor
-  )
-) +
+ggplot(ages, aes(x = actor_age, y = actress_age, color = actor)) +
   geom_point(data = ages_copy, color = "grey") +
   geom_point() +
   facet_wrap(~actor) +
