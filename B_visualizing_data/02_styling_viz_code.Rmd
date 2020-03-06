@@ -1,9 +1,12 @@
 ---
 title: "Styling Viz"
-author: "Andrew Ba Tran"
-date: "2/28/2019"
+author: "Amelia McNamara"
 output: html_document
 ---
+
+## Thank you
+
+These slides were (extremely lightly) modified from those used by Andrew Tran at NICAR 2020. Thanks to Andrew for making them open-source so I could benefit! 
 
 ## Customizing charts
 
@@ -20,8 +23,10 @@ Remember that Dot Plot we made before?
 ```{r dotplot, fig.width=7, fig.height=4.5}
 library(ggplot2)
 
-ggplot(ages,
-       aes(x=actress_age, y=Movie)) +
+ggplot(
+  ages,
+  aes(x = actress_age, y = Movie)
+) +
   geom_point()
 ```
 
@@ -40,13 +45,20 @@ The function is `fct_reorder()` and it works like this
 ![](images/fct_reorder.png)
 
 
-```{r dotplot2, fig.width=7, fig.height=4.5}
+```{r dotplot2, fig.width=7, fig.height=4.5, message=FALSE}
 # If you don't have forcats installed yet, uncomment the line below and run
 # install.packages("forcats")
 
+library(dplyr)
 library(forcats)
-ggplot(ages,
-       aes(x=actress_age, y=fct_reorder(Movie, actress_age, desc=TRUE))) +
+
+ages <- ages %>%
+  mutate(Movie = fct_reorder(Movie, actress_age, .desc = TRUE))
+
+ggplot(
+  ages,
+  aes(x = actress_age, y = Movie)
+) +
   geom_point()
 ```
 
@@ -57,14 +69,19 @@ Not a bad looking chart. We can tweak it a little more and turn it into
 This time we're going to use a new `geom_`: `geom_segment()`
 
 ```{r lollipop_chart, fig.width=8, fig.height=8}
-ggplot(ages,
-       aes(x=actress_age, y=fct_reorder(Movie, actress_age, desc=TRUE))) +
+ggplot(
+  ages,
+  aes(x = actress_age, y = Movie)
+) +
   geom_segment(
-       aes(x = 0,
-           xend = actress_age,
-           yend = fct_reorder(Movie, actress_age, desc=TRUE)),
-           color = "gray50") +
-           geom_point()
+    aes(
+      x = 0,
+      xend = actress_age,
+      yend = Movie
+    ),
+    color = "gray50"
+  ) +
+  geom_point()
 ```
 
 Looking interesting, right?
@@ -75,20 +92,27 @@ That's easy to do.
 
 
 ```{r lollipop_chart_clean, fig.width=8, fig.height=8}
-ggplot(ages,
-       aes(x=actress_age, y=fct_reorder(Movie, actress_age, desc=TRUE))) +
+ggplot(
+  ages,
+  aes(x = actress_age, y = Movie)
+) +
   geom_segment(
-       aes(x = 0,
-           y=fct_reorder(Movie, actress_age, desc=TRUE),
-           xend = actress_age,
-           yend = fct_reorder(Movie, actress_age, desc=TRUE)),
-           color = "gray50") +
-           geom_point() +
-# NEW CODE BELOW
-  labs(x="Actress age", y="Movie", 
-       title = "Actress ages in movies",
-       subtitle = "for R for Journalists class",
-       caption = "Data from Vulture.com and IMDB") +
+    aes(
+      x = 0,
+      y = Movie,
+      xend = actress_age,
+      yend = Movie
+    ),
+    color = "gray50"
+  ) +
+  geom_point() +
+  # NEW CODE BELOW
+  labs(
+    x = "Actress age", y = "Movie",
+    title = "Actress ages in movies",
+    subtitle = "for R for Journalists class",
+    caption = "Data from Vulture.com and IMDB"
+  ) +
   theme_minimal()
 ```
 
@@ -104,27 +128,36 @@ Let's get rid of the grids and add the numbers to the right of each dot.
 
 
 ```{r lollipop_chart_annotated, fig.width=8, fig.height=8}
-ggplot(ages,
-       aes(x=actress_age, y=fct_reorder(Movie, actress_age, desc=TRUE))) +
+ggplot(
+  ages,
+  aes(x = actress_age, y = Movie)
+) +
   geom_segment(
-       aes(x = 0,
-           y=fct_reorder(Movie, actress_age, desc=TRUE),
-           xend = actress_age,
-           yend = fct_reorder(Movie, actress_age, desc=TRUE)),
-           color = "gray50") +
-           geom_point() +
-  labs(x="Actress age", y="Movie", 
-       title = "Actress ages in movies",
-       subtitle = "for R for Journalists class",
-       caption = "Data from Vulture.com and IMDB") +
+    aes(
+      x = 0,
+      y = Movie,
+      xend = actress_age,
+      yend = Movie
+    ),
+    color = "gray50"
+  ) +
+  geom_point() +
+  labs(
+    x = "Actress age", y = "Movie",
+    title = "Actress ages in movies",
+    subtitle = "for R for Journalists class",
+    caption = "Data from Vulture.com and IMDB"
+  ) +
   theme_minimal() +
   # NEW CODE BELOW
-  geom_text(aes(label=actress_age), hjust=-.5) +
-  theme(panel.border = element_blank(), 
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(), 
-        axis.line = element_blank(),
-        axis.text.x = element_blank())
+  geom_text(aes(label = actress_age), hjust = -.5) +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_blank(),
+    axis.text.x = element_blank()
+  )
 ```
 
 So, we added two new **ggplot2** elements: `geom_text()` and `theme()`.
@@ -168,7 +201,7 @@ How's it look?
 Ew, okay. Needs some adjustment. I guess we can't go with the default display for this particular chart.
 
 ```{r ggsave2}
-ggsave("actress_ages_adjusted.png", width=20, height=30, units="cm")
+ggsave("actress_ages_adjusted.png", width = 20, height = 30, units = "cm")
 ```
 
 ![](actress_ages_adjusted.png)
@@ -187,34 +220,35 @@ Alright, I'm going to tweak it some more by adding actor ages. We just need to a
 
 
 ```{r lollipop_chart_annotated_men, fig.width=8, fig.height=9, warning=F, message=F}
-# First, let's permanently reorder the data frame so we don't have to keep using fct_reorder
 
-library(dplyr)
-
-ages_reordered <- ages %>% 
-  mutate(Movie=fct_reorder(Movie, desc(actor_age)))
-
-ggplot(ages_reordered) +
+ggplot(ages) +
   geom_segment(
-       aes(x = actress_age,
-           y = Movie,
-           xend = actor_age,
-           yend = Movie),
-           color = "gray50") +
-  geom_point(aes(x=actress_age, y=Movie), color="dark green") +
-  geom_point(aes(x=actor_age, y=Movie), color="dark blue") +
-  labs(x="", y="", 
-       title = "Actor and actress ages in movies",
-       subtitle = "for R for Journalists class",
-       caption = "Data from Vulture.com and IMDB") +
+    aes(
+      x = actress_age,
+      y = Movie,
+      xend = actor_age,
+      yend = Movie
+    ),
+    color = "gray50"
+  ) +
+  geom_point(aes(x = actress_age, y = Movie), color = "dark green") +
+  geom_point(aes(x = actor_age, y = Movie), color = "dark blue") +
+  labs(
+    x = "", y = "",
+    title = "Actor and actress ages in movies",
+    subtitle = "for R for Journalists class",
+    caption = "Data from Vulture.com and IMDB"
+  ) +
   theme_minimal() +
-  geom_text(aes(x=actress_age, y=Movie, label=actress_age), hjust=ifelse(ages$actress_age<ages$actor_age, 1.5, -.5)) +
-  geom_text(aes(x=actor_age, y=Movie, label=actor_age), hjust=ifelse(ages$actress_age<ages$actor_age, -.5, 1.5)) +
-  theme(panel.border = element_blank(), 
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(), 
-        axis.line = element_blank(),
-        axis.text.x = element_blank())
+  geom_text(aes(x = actress_age, y = Movie, label = actress_age), hjust = ifelse(ages$actress_age < ages$actor_age, 1.5, -.5)) +
+  geom_text(aes(x = actor_age, y = Movie, label = actor_age), hjust = ifelse(ages$actress_age < ages$actor_age, -.5, 1.5)) +
+  theme(
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_blank(),
+    axis.text.x = element_blank()
+  )
 ```
 
 This time I left the x and y axis labels blank because it seemed redundant.
@@ -242,9 +276,9 @@ Let's talk about scales.
 * `scale_fill_manual()`
 
 ```{r scales1}
-ggplot(ages, aes(x=actor_age, y=actress_age)) + geom_point() +
-  scale_x_continuous(breaks=seq(20,30,2), limits=c(20,30)) +
-  scale_y_continuous(breaks=seq(20,40,4), limits=c(20,40))
+ggplot(ages, aes(x = actor_age, y = actress_age)) + geom_point() +
+  scale_x_continuous(breaks = seq(20, 30, 2), limits = c(20, 30)) +
+  scale_y_continuous(breaks = seq(20, 40, 4), limits = c(20, 40))
 ```
 
 By setting *breaks* in `scale_x_continuous()`, we limited the breaks where the chart was divided on the x axis in intervals of 2. 
@@ -259,8 +293,8 @@ That was limiting the scale by continuous data.
 Here's how to set limits on discrete data.
 
 ```{r discrete}
-ggplot(ages, aes(x=actor)) + geom_bar() +
-  scale_x_discrete(limits=c("Tom Hanks", "Tom Cruise", "Denzel Washington"))
+ggplot(ages, aes(x = actor)) + geom_bar() +
+  scale_x_discrete(limits = c("Tom Hanks", "Tom Cruise", "Denzel Washington"))
 ```
 
 ## Scales for color and fill
@@ -272,24 +306,22 @@ You can use hex symbols or the [name of a color](http://www.stat.columbia.edu/~t
 We'll use `scale_fill_manual()`.
 
 ```{r color, fig.width=9, fig.height=5}
-library(dplyr)
-
-avg_age <- ages %>% 
+avg_age <- ages %>%
   group_by(actor) %>%
-  mutate(age_diff = actor_age-actress_age) %>% 
+  mutate(age_diff = actor_age - actress_age) %>%
   summarize(average_age_diff = mean(age_diff))
 
-ggplot(avg_age, aes(x=actor, y=average_age_diff, fill=actor)) + 
-  geom_bar(stat="identity") +
-  theme(legend.position="none") + # This removes the legend
-  scale_fill_manual(values=c("aquamarine", "darkorchid", "deepskyblue2", "lemonchiffon2", "orange", "peachpuff3", "tomato"))
+ggplot(avg_age, aes(x = actor, y = average_age_diff, fill = actor)) +
+  geom_bar(stat = "identity") +
+  theme(legend.position = "none") + # This removes the legend
+  scale_fill_manual(values = c("aquamarine", "darkorchid", "deepskyblue2", "lemonchiffon2", "orange", "peachpuff3", "tomato"))
 ```
 You can also specify a color palette using `scale_fill_brewer()` or `scale_color_brewer()`
 
 ```{r palette1, fig.width=9, fig.height=5}
-ggplot(avg_age, aes(x=actor, y=average_age_diff, fill=actor)) + 
-  geom_bar(stat="identity") +
-  theme(legend.position="none") + 
+ggplot(avg_age, aes(x = actor, y = average_age_diff, fill = actor)) +
+  geom_bar(stat = "identity") +
+  theme(legend.position = "none") +
   scale_fill_brewer()
 ```
 
@@ -297,10 +329,10 @@ Check out some of the other [palette options](https://learnr.wordpress.com/2009/
 
 
 ```{r palette2, fig.width=9, fig.height=5}
-ggplot(avg_age, aes(x=actor, y=average_age_diff, fill=actor)) + 
-  geom_bar(stat="identity") +
-  theme(legend.position="none") + 
-  scale_fill_brewer(palette="Pastel1")
+ggplot(avg_age, aes(x = actor, y = average_age_diff, fill = actor)) +
+  geom_bar(stat = "identity") +
+  theme(legend.position = "none") +
+  scale_fill_brewer(palette = "Pastel1")
 ```
 
 Did you know that someone made a [Wes Anderson color palette package](https://github.com/karthik/wesanderson) based on his different movies? 
@@ -311,10 +343,10 @@ You can annotate charts with `annotate()` and `geom_hline()` or `geom_vline()`.
 
 
 ```{r palette3}
-ggplot(ages, aes(x=actor_age, y=actress_age)) + 
+ggplot(ages, aes(x = actor_age, y = actress_age)) +
   geom_point() +
-  geom_hline(yintercept=50, color="red") +
-  annotate("text", x=40, y=51, label="Random text for some reason", color="red")
+  geom_hline(yintercept = 50, color = "red") +
+  annotate("text", x = 40, y = 51, label = "Random text for some reason", color = "red")
 ```
 
 ## Themes
@@ -327,10 +359,10 @@ Here's one for the economist
 
 ```{r theme1}
 # If you don't have ggthemes installed yet, uncomment the line below and run it
-#install.packages("ggthemes")
+# install.packages("ggthemes")
 
 library(ggthemes)
-ggplot(ages, aes(x=actor_age, y=actress_age, color=actor)) + 
+ggplot(ages, aes(x = actor_age, y = actress_age, color = actor)) +
   geom_point() +
   theme_economist() +
   scale_colour_economist()
@@ -340,7 +372,7 @@ Here's one based on FiveThirtyEight's style (though it's not the official one).
 
 ```{r theme2}
 
-ggplot(ages, aes(x=actor_age, y=actress_age, color=actor)) + 
+ggplot(ages, aes(x = actor_age, y = actress_age, color = actor)) +
   geom_point() +
   theme_fivethirtyeight()
 ```
