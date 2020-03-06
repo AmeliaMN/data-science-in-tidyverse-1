@@ -435,7 +435,7 @@ summary(multi_logistic)
 ```
 
 
-We can't interpret our coefficients the same way anymore. In fact, these numbers represent a "space" that is hard for our brains to reason about-- log-odds space. We would rather think in odds space or probability space. [Amelia-- add link to 291 lab]
+We can't interpret our coefficients the same way anymore. In fact, these numbers represent a "space" that is hard for our brains to reason about-- log-odds space. We would rather think in odds space or probability space. (More about this [here](https://www.amelia.mn/sds291/labs/lab_logistic_regression.html) and [here](https://www.amelia.mn/sds291/lectures/19_logistic.pdf))
 
 Again, we can `augment()` our model to help us think in a better space. 
 
