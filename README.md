@@ -1,8 +1,3 @@
----
-output:
-  html_document: default
-  pdf_document: default
----
 # Exploring the tidyverse in R 
 
 This is the repo for the one-day workshop *"Exploring the tidyverse in R"* taught at [NICAR](https://www.ire.org/events-and-training/conferences/nicar-2020)'s 2020 conference in New Orleans, LA.
