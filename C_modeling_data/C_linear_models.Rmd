@@ -60,6 +60,24 @@ skim(schools_data)
 
 We can see that the various columns have very different means. We can also see that the means and medians can be very different. This indicates to us that the distributions are different, and not normal.
 
+## Tidy data for modeling
+
+We've talked about some aspects of "tidy" data, but this dataset is untidy in a new way-- it has observations in it that are more than one type of "thing." 
+
+```{r}
+schools_data %>%
+  count(type)
+```
+
+In this case, some rows are high schools, others are middle schools, others are elementary schools... and others are charter schools. We shouldn't do data analysis on this entire dataset, because it would be comparing apples to oranges. 
+
+So, let's focus just on elementary schools (the biggest category!). Practice filtering for just elementary schools.
+
+```{r}
+elementary_schools <- 
+```
+
+
 ## Exploring distributions with ggplot
 
 As we've seen, `ggplot2` is a very powerful graphics library! It can be used to make production-quality graphics, but it's also a good tool in your toolbox for doing quick checks on your data.  
@@ -87,10 +105,12 @@ df %>%
 
 In this distribution, the mean (aka 'average') and the median are essentially equal (and, almost equal to zero), and both sides are symmetrical around them. But this is unusual in the real world. 
 
+
+
 Let's start with the distribution of test scores, which we'll make with ggplot. 
 
 ```{r}
-ggplot(schools_data, aes(x = parc_cpct)) +
+ggplot(elementary_schools, aes(x = parc_cpct)) +
   geom_histogram(binwidth = 10)
 ```
 
@@ -99,7 +119,7 @@ What does this tell us about the distribution of school test-passing rates? This
 Next let's look at the distribution of the percent black variable
 
 ```{r}
-ggplot(schools_data, aes(pct_black)) +
+ggplot(elementary_schools, aes(pct_black)) +
   geom_histogram(binwidth = 10)
 ```
 
@@ -114,14 +134,6 @@ You try: make a histogram of the distribution of pct_low_inc
 ```
 
 ## Looking at relationships between two variables
-
-Let's explore the relationship between the percent of a school's students who are low-income, and the percent who are proficient.
-
-First, let's practice filtering for just elementary schools.
-
-```{r}
-elementary_schools <- 
-```
 
 Now let's plot the relationship between the percent of a school's students who are low-income and the percent who achieved proficiency on the PARCC exam.
 
@@ -185,6 +197,8 @@ You try: Run a linear regression that shows the relationship between the percent
 ```
 
 
+
+
 ### Multiple regression
 
 Does a school being in Chicago affect these results? First, let's consider this visually. 
@@ -238,7 +252,7 @@ Now it's a data frame, instead of that weird model object. We can work with this
 
 ```{r}
 tidy(multi_mod) %>%
-  filter(term == "pct_low_inc")
+  select(term, estimate)
 ```
 
 
@@ -250,7 +264,7 @@ You practice. Run a linear model where our predictors are pct_white and chi. The
 
 ### Fitted values
 
-If we feed a model through the augment() function, it will calculate fitted (or "predicted") values for us.
+If we feed a model through the augment() function, it will make a dataset that contains our response variable, the explanatory variable(s), fitted (or "predicted") values, and much more, all in a tidy format. 
 
 ```{r}
 augment(multi_mod)
@@ -266,8 +280,7 @@ The difference between the fitted value and the actual value can be interpreted 
 To keep our plot from being too busy, let's filter out values that are not outliers.
 
 ```{r}
-multi_mod_augment <- multi_mod %>%
-  augment() 
+multi_mod_augment <- augment(multi_mod) 
 multi_mod_outliers <- multi_mod_augment %>% 
   filter(.resid < -20 | .resid > 20)
 ```
@@ -296,8 +309,7 @@ multi_mod_outliers %>%
 From this, we can see that row 106 is particularly far off from our predictions. But, we don't know which school it is, because we lost the variables that weren't used in making our model. Luckily, there's a way to fix that! We can pass the dataset as an argument to the `augment` function.
 
 ```{r}
-multi_mod_outliers <- multi_mod %>%
-  augment(elementary_schools) %>% 
+multi_mod_outliers <- augment(multi_mod, elementary_schools) %>% 
   filter(.resid < -20 | .resid > 20)
 multi_mod_outliers %>%
   arrange(.resid)
@@ -317,6 +329,23 @@ multi_mod_outliers %>%
 
 Eisenhower Elementary outscored what would be expected for a similar school with mostly low-income students by 73 percentage points.
 
+### Interpreting model fit
+
+Looking at the plots, it seems like we have some big residuals. Those might be the story in themselves! But, if we are trying to find a good predictive model we are interested in the percentage of variability in the response explained by the explanatory variable(s). Let's look back at summaries of our models.
+
+```{r}
+summary(low_inc_mod)
+```
+The "multiple R-squared" here is 0.6177. So, our model using just `pct_low_inc` can explain 62% of the variability in PARC scores. That's pretty good! If it was only 10%, we might worry. (The amount of variability you consider to be "good" is highly subjective, and depends on the context of the data. If we were predicting earthquakes, 10% of the variability would be amazing! In some scientific fields, anything less than 90% is bad. In social science contexts 60% is usually considered to be good.)
+
+```{r}
+summary(multi_mod)
+```
+This model is even better! It explains 64% of the variability in PARC scores. 
+
+One caveat is that multiple R-squared values always increase as you add terms to your model. So, if you want to compare two models you should use adjusted R-squared, which doesn't have as nice of an interpretation sentence, but controls for the effect of adding new variables. Looking at our adjusted $R^2$, this model is still better. 
+
+
 ### Assessing model conditions
 
 Linear models are only reliable for predictions and inference when their conditions are met. The conditions can be remembered by the acronym LINE.
@@ -328,7 +357,7 @@ Linear models are only reliable for predictions and inference when their conditi
 
 I always say independence is the "thinking condition," because you can't assess it using plots. Instead, you have to think about whether you believe observations in your data are independent from one another. Do we think a particular elementary school is independent from another elementary school? Perhaps not, if they are in the same district or share a principal. But, there is little to be done to correct this problem once we have data collected, and in cases like this, no way to collect the data differently.
 
-For the other three conditions, we need to look at plots of residuals. The first, and most important, residual plot shows the relationship between residuals and fitted values. 
+For the other three conditions, we need to look at plots of residuals. The first (and most important!) residual plot shows the relationship between residuals and fitted values. 
 
 ```{r}
   ggplot(multi_mod_augment, aes(x=.fitted, y=.resid)) +
@@ -340,7 +369,7 @@ In this plot, we are looking for linearity (we want that middle line to be nice 
 
 In this case, linearity looks okay to me, but equality of variance seems to be violated. This means we actually shouldn't make predictions from this model! 
 
-The other two conditions we can assess with a plot is normality. We want our residuals to be normally distributed. There are a couple ways to check this.
+The other condition we can assess with a plot is normality. We want our residuals to be normally distributed. There are a couple ways to check this.
 
 One is to make a histogram, just like we did at the beginning of this document. 
 
@@ -362,24 +391,18 @@ ggplot(multi_mod_augment, aes(sample=.resid)) +
 
 For the normality condition to be upheld, we want the dots to fall along the line. In this case, the dots are pulling away from the line in a "s-shape." A "c-shape" would also be bad. 
 
-In order to have a model we can trust, we need to fix these violations. There are rules of thumb to help (searching for "Tukey's bulging rule" to learn more), but in many cases what you need is a log transformation. 
+In order to have a model we can trust, we need to fix these violations. There are rules of thumb to help (searching for "Tukey's bulging rule" to learn more), but in many cases what you need is a log transformation. Sadly, in this case I don't think that's going to fix it. 
+
+One way to tell is to make a histogram of a variable in your model that is non-normal, and then try applying the transformation to see if the resulting histogram looks better. Most of the time, it does, but not in this case! 
 
 ```{r}
-skim(elementary_schools)
-summary(low_inc_mod)
-ggplot(elementary_schools) + geom_histogram(aes(x=sqrt(parc_cpct)))
-plot(multi_mod)
-
-lm(sqrt(parc_cpct) ~ pct_low_inc + chi, data = elementary_schools) %>%
-  augment() %>%
-  ggplot(aes(x=.fitted, y=.resid)) +
-  geom_point()+
-  geom_smooth(se=FALSE)
+ggplot(elementary_schools) + geom_histogram(aes(x=parc_cpct))
+ggplot(elementary_schools) + geom_histogram(aes(x=log(parc_cpct)))
 ```
 
 ### Logistic regression
 
-Another common type of model is a logistic regression model. For this type of model, our response variable (the thing we think might "respond") needs to be binary: a yes/no, TRUE/FALSE, or 0/1 variable. We can still use any type of predictor in the model, but the interpretation of the model will be different. In our dataset, we don't have a variable that is binary, but we can create one (this can be a bad practice, so we're mostly doing it for illustration).
+Another common type of model is a logistic regression model. For this type of model, our response variable (the thing we think might "respond") needs to be binary: a yes/no, TRUE/FALSE, or 0/1 variable. We can still use any type of explanatory variable as a predictor in the model, but the interpretation of the model will be different. In our dataset, we don't have a variable that is binary, but we can create one (this can be a bad practice, so we're mostly doing it for illustration).
 
 For another `dplyr` review, add a new column to the `elementary_schools` data called `good_school`, which is whether or not more than half of the students have passed the test.
 
@@ -394,6 +417,8 @@ glm(parc_cpct ~ pct_low_inc, data = elementary_schools)
 ```
 
 What is different about the output?
+
+
 
 In order to run a logistic regression model, we need to use a binary response variable (`good_school`, in this case), and change the "family" of the model to be "binomial" (this is the theoretical probability model that goes with logistic regression, I'm happy to explain more offline).
 
@@ -478,6 +503,37 @@ Let's apply that to these coefficients:
 Does that make sense?
 
 
+### Assessing a logistic regression model
+
+Deciding if a logistic regression model is good is more difficult, because it no longer has residuals. Either a school is "good" or not, and either we predict it is good or not. One way to consider how good the model is is to see if you did better than the mean.
+
+```{r}
+elementary_schools %>%
+  count(good_school) %>%
+  drop_na()%>%
+  mutate(prop = n/sum(n))
+```
+So, most of our schools did not achieve the 50% passing rate. In fact, 79% of cases are not "good schools." So, we could get 79% of our predictions to be correct just by predicting every single school will have less than a 50% passing rate. 
+
+Did our model do better than that? Let's create a binary variable out of our predicted probability for each school. 
+
+```{r}
+multi_logistic_augmented <- multi_logistic_augmented %>%
+  mutate(predict_good = if_else(probability>0.5, TRUE, FALSE))
+```
+
+```{r}
+multi_logistic_augmented %>%
+  group_by(good_school, predict_good) %>%
+  summarize(n=n())
+```
+So, we got our predictions right
+
+```{r}
+(1644+297)/(1644+122+168+297)
+```
+
+87% of the time! That's pretty good, we definitely beat the mean. 
 
 ## More models
 
