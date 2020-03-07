@@ -33,7 +33,7 @@ usethis::use_course("https://github.com/AmeliaMN/data-science-in-tidyverse-nicar
 
 To get back to this project later, double-click on "data-science-in-the-tidyverse.Rproj".
 
-Intro slides: 
+Intro slides: https://docs.google.com/presentation/d/1rB5bSQcAzp27Eok_yq-J_9EOmqowXqfGRft94BnGV68/edit?usp=sharing
 
 ## License
 
