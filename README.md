@@ -22,16 +22,18 @@ You will learn how to visualize, transform, and model data in R and work with da
 You'll need the following packages:
 
 ```R
-install.packages(c("tidyverse", "lubridate", "janitor", "rmarkdown", "usethis"))
+install.packages(c("tidyverse", "lubridate", "janitor", "rmarkdown", "usethis", "leaflet", "htmltools"))
 ```
 
 Then you can grab a local copy of all the slides, code, data, and cheatsheets with:
 
 ```R
-usethis::use_course("")
+usethis::use_course("https://github.com/AmeliaMN/data-science-in-tidyverse-nicar-2020/archive/master.zip")
 ```
 
 To get back to this project later, double-click on "data-science-in-the-tidyverse.Rproj".
+
+Intro slides: 
 
 ## License
 
