@@ -1,0 +1,258 @@
+---
+title: "NICAR 2020 - campaign finance viz example"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(plotly)
+library(widgetframe)
+library(scales)
+library(zoo)
+library(janitor)
+library(tidycensus)
+library(tigris)
+library(sf)
+library(leaflet)
+library(RColorBrewer)
+library(htmlwidgets)
+library(htmltools)
+library(widgetframe)
+library(sp)
+library(raster)
+library(viridis)
+options(tigris_class = "sf")
+options(scipen = 999)
+
+#bring in saved table from step 01
+zipcompare <- readRDS("zipcompare.rds")
+
+
+
+
+
+```
+
+
+Clean up zip codes for mapping purposes
+
+
+```{r}
+head(zipcompare)
+names(zipcompare)
+
+zipcompare$GEOID <- zipcompare$zip_code
+
+#remove any negative values
+zipcompare <- zipcompare %>% 
+  filter(demtotal >= 0,
+         goptotal >= 0)
+
+zipcompare <- zipcompare %>% 
+  filter(!str_detect(GEOID, "^99"),
+         !str_detect(GEOID, "^96"),
+         !str_detect(GEOID, "^006"),
+         !str_detect(GEOID, "^007"),
+         !str_detect(GEOID, "^009")
+           )
+```
+
+
+```{r}
+#### get zip code lat/long points from census gazeteer file
+zip_points <- read_csv("zip_points.csv", 
+                       col_types = cols(ALAND = col_skip(), 
+                                        ALAND_SQMI = col_skip(), AWATER = col_skip(), 
+                                        AWATER_SQMI = col_skip()))
+
+
+zip_points
+
+#clean up column names
+colnames(zip_points) <- c("GEOID", "lat", "lon")
+```
+
+
+```{r}
+#join data
+zip_map <- inner_join(zipcompare, zip_points)
+
+zip_map$winner <- as.factor(zip_map$winner)
+```
+
+
+```{r}
+#add dollar formatting
+zip_map$demdisplay <- dollar(zip_map$demtotal)
+zip_map$gopdisplay <- dollar(zip_map$goptotal)
+
+
+```
+
+
+### MAP!
+
+```{r}
+#### MAPPING POINTS ##### ---------------------------------------
+
+#basic map
+
+leaflet(zip_map) %>% 
+  addTiles() %>%
+  addCircles(lng = ~lon, lat = ~lat, weight = .4,
+             stroke = FALSE, fillOpacity = .25
+  )
+```
+
+
+```{r}
+# Now we'll get fancier
+
+#palette
+factpal <- colorFactor(c("blue","red"), zip_map$winner)
+
+#labels
+labs1 <- lapply(seq(nrow(zip_map)), function(i) {
+  paste0( '<p>', 'Zip code: ', '<strong>', zip_map[i, "GEOID"], '</strong></p>',
+          '<p></p>', 
+          "Democrats: ", zip_map[i, "demdisplay"],
+          '<p></p>', 
+          "Republicans: ", zip_map[i, "gopdisplay"]
+  ) 
+})
+
+m1 <- leaflet(zip_map) %>% 
+  addTiles() %>%
+  addCircles(lng = ~lon, lat = ~lat, weight = .4,
+             stroke = FALSE, fillOpacity = .25,
+             radius = ~sqrt(advantage) * 300, 
+             fillColor = ~factpal(winner),
+             label = lapply(labs1, HTML)
+  ) %>%
+  addControl("RNC/NRCC vs. DNC/DCCC - Feb. individual contributions by zip code", position = "topright") 
+# %>% 
+#   setView(-96, 37.8, zoom=4) 
+
+m1
+
+#save to frameable file compatible with pym.js
+htmlwidgets::saveWidget(frameableWidget(m1),'feb_dvsr_byzip_points.html')
+
+# save as rds object
+saveRDS(m1, "savedmap_zipcompare.rds")
+```
+
+
+### CHARTS!
+
+
+```{r}
+#first the dems ####
+
+#pull out top 10 zips for the dems
+dem10 <- zipcompare %>% 
+  arrange(desc(demtotal)) %>% 
+  head(10)
+
+dem10
+```
+
+
+```{r}
+#reorder factor to allow for descending bars
+dem10 <- dem10 %>%
+  mutate(zipname = fct_reorder(zipname, demtotal)) 
+
+#chart it out
+d <- ggplot(dem10, aes(zipname, demtotal)) + geom_col(fill = "darkblue") + coord_flip() +
+  theme_minimal()
+
+d
+```
+
+
+```{r}
+#add extra elements to the chart and convert to ggplotly
+d2 <- d + labs(title="Top DNC/DCCC zip codes",
+               # subtitle = "A subtitle",
+               caption = "Source: FEC",
+               x ="", y = "") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels=dollar) 
+
+dd <- ggplotly(d2) 
+
+dd_nomenu <- dd %>% config(displayModeBar = FALSE)
+dd_nomenu
+```
+
+
+```{r}
+#save as embeddable format
+# htmlwidgets::saveWidget(frameableWidget(dd), 'demtopzip_plt.html')
+htmlwidgets::saveWidget(frameableWidget(dd_nomenu), 'demtopzip_plt_nm.html')
+
+#save as RDS object
+saveRDS(dd_nomenu, "demtopzip_plt_nm.rds")
+```
+
+
+```{r}
+#now the republicans ################
+
+
+
+
+
+#pull out top 10 zips for the gop
+gop10 <- zipcompare %>% 
+  arrange(desc(goptotal)) %>% 
+  head(10)
+
+gop10
+
+#reorder factor to allow for descending bars
+gop10 <- gop10 %>%
+  mutate(zipname = fct_reorder(zipname, goptotal)) 
+
+#chart it out
+p <- ggplot(gop10, aes(zipname, goptotal)) + geom_col(fill = "darkred") + coord_flip() +
+  theme_minimal()
+
+p
+
+#add titles and other extras
+p2 <- p + labs(title="Top RNC/NRCC zip codes",
+               # subtitle = "A subtitle",
+               caption = "Source: FEC",
+               x ="", y = "") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels=dollar) 
+
+p2
+
+pp <- ggplotly(p2) 
+
+pp
+
+pp_nomenu <- pp %>% config(displayModeBar = FALSE)
+pp_nomenu
+
+#save as embeddable format
+# htmlwidgets::saveWidget(frameableWidget(pp), 'goptopzip_plt.html')
+htmlwidgets::saveWidget(frameableWidget(pp_nomenu), 'goptopzip_plt_nm.html')
+
+#save as RDS object
+saveRDS(pp_nomenu, "goptopzip_plt_nm.rds")
+
+
+
+
+
+
+```
+
