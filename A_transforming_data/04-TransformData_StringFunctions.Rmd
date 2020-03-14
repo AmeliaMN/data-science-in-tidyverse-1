@@ -1,5 +1,7 @@
 ---
 title: "NICAR 2020 - Transforming Data, String Functions"
+author: "Aaron Kessler"
+date: "3/7/2020"
 output: html_document
 ---
 
